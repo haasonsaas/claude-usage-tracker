@@ -65,6 +65,56 @@ export function aggregateDailyUsage(entries: UsageEntry[]): Map<string, DailyUsa
   return dailyMap;
 }
 
+function calculateActualTokensPerHour(entries: UsageEntry[]): { sonnet4: number; opus4: number } {
+  // Group entries by conversation and calculate session durations
+  const conversations = new Map<string, { entries: UsageEntry[]; startTime: Date; endTime: Date }>();
+  
+  for (const entry of entries) {
+    if (!conversations.has(entry.conversationId)) {
+      conversations.set(entry.conversationId, {
+        entries: [],
+        startTime: new Date(entry.timestamp),
+        endTime: new Date(entry.timestamp)
+      });
+    }
+    
+    const conv = conversations.get(entry.conversationId)!;
+    conv.entries.push(entry);
+    const entryTime = new Date(entry.timestamp);
+    if (entryTime < conv.startTime) conv.startTime = entryTime;
+    if (entryTime > conv.endTime) conv.endTime = entryTime;
+  }
+  
+  let sonnet4TotalTokens = 0, sonnet4TotalHours = 0;
+  let opus4TotalTokens = 0, opus4TotalHours = 0;
+  
+  for (const conv of conversations.values()) {
+    const durationMs = conv.endTime.getTime() - conv.startTime.getTime();
+    const durationHours = Math.max(durationMs / (1000 * 60 * 60), 0.1); // Minimum 6 minutes
+    
+    const sonnet4Tokens = conv.entries
+      .filter(e => e.model.includes('sonnet'))
+      .reduce((sum, e) => sum + e.total_tokens, 0);
+    const opus4Tokens = conv.entries
+      .filter(e => e.model.includes('opus'))
+      .reduce((sum, e) => sum + e.total_tokens, 0);
+    
+    if (sonnet4Tokens > 0) {
+      sonnet4TotalTokens += sonnet4Tokens;
+      sonnet4TotalHours += durationHours;
+    }
+    if (opus4Tokens > 0) {
+      opus4TotalTokens += opus4Tokens;
+      opus4TotalHours += durationHours;
+    }
+  }
+  
+  return {
+    sonnet4: sonnet4TotalHours > 0 ? sonnet4TotalTokens / sonnet4TotalHours : TOKENS_PER_HOUR_ESTIMATES.sonnet4.min,
+    opus4: opus4TotalHours > 0 ? opus4TotalTokens / opus4TotalHours : TOKENS_PER_HOUR_ESTIMATES.opus4.min
+  };
+}
+
 export function getCurrentWeekUsage(entries: UsageEntry[]): WeeklyUsage {
   const now = new Date();
   const weekStart = startOfWeek(now, { weekStartsOn: 1 }); // Monday
@@ -84,7 +134,12 @@ export function getCurrentWeekUsage(entries: UsageEntry[]): WeeklyUsage {
   const cacheReadTokens = weekEntries.reduce((sum, e) => sum + (e.cache_read_input_tokens || 0), 0);
   const cost = weekEntries.reduce((sum, e) => sum + calculateCost(e), 0);
   
-  // Estimate hours based on token usage
+  // Calculate actual tokens per hour from recent usage data (last 2 weeks)
+  const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+  const recentEntries = entries.filter(e => new Date(e.timestamp) >= twoWeeksAgo);
+  const actualRates = calculateActualTokensPerHour(recentEntries);
+  
+  // Get token counts for current week
   const sonnet4Tokens = weekEntries
     .filter(e => e.model.includes('sonnet'))
     .reduce((sum, e) => sum + e.total_tokens, 0);
@@ -105,12 +160,12 @@ export function getCurrentWeekUsage(entries: UsageEntry[]): WeeklyUsage {
     models,
     estimatedHours: {
       sonnet4: {
-        min: sonnet4Tokens / TOKENS_PER_HOUR_ESTIMATES.sonnet4.max,
-        max: sonnet4Tokens / TOKENS_PER_HOUR_ESTIMATES.sonnet4.min,
+        min: sonnet4Tokens / actualRates.sonnet4,
+        max: sonnet4Tokens / actualRates.sonnet4,
       },
       opus4: {
-        min: opus4Tokens / TOKENS_PER_HOUR_ESTIMATES.opus4.max,
-        max: opus4Tokens / TOKENS_PER_HOUR_ESTIMATES.opus4.min,
+        min: opus4Tokens / actualRates.opus4,
+        max: opus4Tokens / actualRates.opus4,
       },
     },
   };

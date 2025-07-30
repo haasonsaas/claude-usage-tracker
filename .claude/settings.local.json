@@ -11,7 +11,9 @@
       "WebFetch(domain:github.com)",
       "Bash(fd:*)",
       "Bash(node dist/cli.js --help)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(git tag:*)",
+      "Bash(gh repo edit:*)"
     ],
     "deny": []
   }
