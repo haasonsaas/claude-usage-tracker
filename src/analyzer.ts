@@ -1,6 +1,6 @@
 import { startOfWeek, endOfWeek, isWithinInterval, format } from 'date-fns';
-import type { UsageEntry, DailyUsage, WeeklyUsage, RateLimitInfo, PlanType } from './types.js';
-import { MODEL_PRICING, RATE_LIMITS, TOKENS_PER_HOUR_ESTIMATES } from './config.js';
+import type { UsageEntry, DailyUsage, WeeklyUsage, RateLimitInfo } from './types.js';
+import { MODEL_PRICING, RATE_LIMITS, TOKENS_PER_HOUR_ESTIMATES, type PlanType } from './config.js';
 
 export function calculateCost(entry: UsageEntry): number {
   if (entry.cost !== undefined) return entry.cost;

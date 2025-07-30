@@ -84,7 +84,7 @@ export function formatRateLimitStatus(rateLimitInfo: RateLimitInfo): string {
   
   // Sonnet 4
   const sonnet4Usage = `${formatHours(rateLimitInfo.currentUsage.estimatedHours.sonnet4.min)}-${formatHours(rateLimitInfo.currentUsage.estimatedHours.sonnet4.max)} hrs`;
-  const sonnet4Limit = `${rateLimitInfo.weeklyLimits.sonnet4Hours.min}-${rateLimitInfo.weeklyLimits.sonnet4Hours.max} hrs`;
+  const sonnet4Limit = `${rateLimitInfo.weeklyLimits.sonnet4.min}-${rateLimitInfo.weeklyLimits.sonnet4.max} hrs`;
   const sonnet4Percent = `${formatPercentage(rateLimitInfo.percentUsed.sonnet4.min)}-${formatPercentage(rateLimitInfo.percentUsed.sonnet4.max)}`;
   const sonnet4Status = rateLimitInfo.percentUsed.sonnet4.max > 80 
     ? chalk.red('⚠️  High') 
@@ -96,7 +96,7 @@ export function formatRateLimitStatus(rateLimitInfo: RateLimitInfo): string {
   
   // Opus 4
   const opus4Usage = `${formatHours(rateLimitInfo.currentUsage.estimatedHours.opus4.min)}-${formatHours(rateLimitInfo.currentUsage.estimatedHours.opus4.max)} hrs`;
-  const opus4Limit = `${rateLimitInfo.weeklyLimits.opus4Hours.min}-${rateLimitInfo.weeklyLimits.opus4Hours.max} hrs`;
+  const opus4Limit = `${rateLimitInfo.weeklyLimits.opus4.min}-${rateLimitInfo.weeklyLimits.opus4.max} hrs`;
   const opus4Percent = `${formatPercentage(rateLimitInfo.percentUsed.opus4.min)}-${formatPercentage(rateLimitInfo.percentUsed.opus4.max)}`;
   const opus4Status = rateLimitInfo.percentUsed.opus4.max > 80 
     ? chalk.red('⚠️  High') 

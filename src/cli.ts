@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import { loadUsageData } from './data-loader.js';
 import { aggregateDailyUsage, getCurrentWeekUsage, getRateLimitInfo } from './analyzer.js';
 import { formatDailyTable, formatWeeklySummary, formatRateLimitStatus, formatHeader } from './formatters.js';
-import type { PlanType } from './types.js';
+import type { PlanType } from './config.js';
 
 program
   .name('claude-usage')
