@@ -13,7 +13,9 @@
       "Bash(node dist/cli.js --help)",
       "Bash(node:*)",
       "Bash(git tag:*)",
-      "Bash(gh repo edit:*)"
+      "Bash(gh repo edit:*)",
+      "Bash(timeout:*)",
+      "Bash(true)"
     ],
     "deny": []
   }

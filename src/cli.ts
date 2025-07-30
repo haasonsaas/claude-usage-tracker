@@ -6,6 +6,7 @@ import { loadUsageData } from './data-loader.js';
 import { aggregateDailyUsage, getCurrentWeekUsage, getRateLimitInfo, getEfficiencyInsights } from './analyzer.js';
 import { formatDailyTable, formatWeeklySummary, formatRateLimitStatus, formatHeader, formatEfficiencyInsights } from './formatters.js';
 import { ModelAdvisor } from './model-advisor.js';
+import { UsageWatcher } from './watch-monitor.js';
 import type { PlanType } from './config.js';
 
 program
@@ -222,6 +223,39 @@ program
       console.log(chalk.green.bold(`💡 Daily Savings Potential:`));
       console.log(chalk.green(`If you have 10 similar conversations: $${(recommendation.costSavings * 10).toFixed(2)}`));
       console.log(chalk.green(`Monthly potential: $${(recommendation.costSavings * 10 * 30).toFixed(0)}\n`));
+    }
+  });
+
+program
+  .command('watch')
+  .description('Live monitoring of Claude usage with real-time cost tracking')
+  .action(async () => {
+    const watcher = new UsageWatcher();
+    
+    // Handle graceful shutdown
+    process.on('SIGINT', () => {
+      watcher.stopWatching();
+      console.log(chalk.yellow('\n👋 Monitoring stopped. Goodbye!'));
+      process.exit(0);
+    });
+    
+    process.on('SIGTERM', () => {
+      watcher.stopWatching();
+      process.exit(0);
+    });
+    
+    try {
+      await watcher.startWatching((stats, recentConversations) => {
+        const display = watcher.formatLiveDisplay(stats, recentConversations);
+        console.log(display);
+      });
+      
+      // Keep the process running
+      await new Promise(() => {}); // Infinite promise
+      
+    } catch (error) {
+      console.error(chalk.red('Error starting live monitor:'), error);
+      process.exit(1);
     }
   });
 

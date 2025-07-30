@@ -10,6 +10,7 @@
 - 💰 **Accurate Cost Tracking** - Monitor real token usage and costs ($2,200 weekly spend)
 - 🎯 **Smart Plan Recommendations** - Compare your actual usage across Pro, $100 Max, and $200 Max plans
 - 🤖 **AI Model Advisor** - Get real-time recommendations on whether to use Sonnet vs Opus for maximum savings
+- 🔴 **Live Monitoring** - Real-time dashboard with burn rate analysis and efficiency alerts
 - 📱 **Beautiful CLI Output** - Clean, colorful tables with actionable insights
 
 ## 🚀 Installation
@@ -40,6 +41,9 @@ node dist/cli.js insights
 
 # Get model recommendation
 node dist/cli.js recommend "Write a REST API"
+
+# Live monitoring (press Ctrl+C to stop)
+node dist/cli.js watch
 ```
 
 ## Usage
@@ -74,6 +78,17 @@ claude-usage recommend
 
 Get AI-powered recommendations on whether to use Sonnet 4 or Opus 4 for your specific task, with cost savings calculations.
 
+### Live Usage Monitoring
+```bash
+claude-usage watch
+```
+
+Real-time monitoring dashboard showing:
+- **Live cost tracking** with today's spend and burn rate analysis
+- **Conversation efficiency** ratings (⭐⭐⭐ for high efficiency)
+- **Weekly progress** toward rate limits
+- **Real-time alerts** for high burn rates or inefficient conversations
+
 ## Commands
 
 | Command | Description | Options |
@@ -84,6 +99,7 @@ Get AI-powered recommendations on whether to use Sonnet 4 or Opus 4 for your spe
 | `check-limits` | Check rate limit status for all plans | None |
 | `insights` | Show detailed efficiency insights and optimization recommendations | `-d, --days <days>` - Number of days to analyze (default: 30) |
 | `recommend` | Get AI-powered model recommendation for your task | `[prompt]` - Task description (optional, will prompt interactively) |
+| `watch` | Live monitoring with real-time cost tracking and burn rate analysis | None - Press Ctrl+C to stop |
 
 ## Rate Limits (Effective August 28, 2025)
 
