@@ -171,6 +171,149 @@ export function getCurrentWeekUsage(entries: UsageEntry[]): WeeklyUsage {
   };
 }
 
+export interface HourlyUsage {
+  hour: number;
+  totalTokens: number;
+  cost: number;
+  conversationCount: number;
+  sonnetTokens: number;
+  opusTokens: number;
+}
+
+export interface ModelEfficiency {
+  model: string;
+  avgTokensPerConversation: number;
+  avgCostPerConversation: number;
+  totalConversations: number;
+  totalCost: number;
+  costPerToken: number;
+}
+
+export interface EfficiencyInsights {
+  hourlyUsage: HourlyUsage[];
+  peakHours: number[];
+  modelEfficiency: ModelEfficiency[];
+  costSavingsOpportunity: {
+    potentialSavings: number;
+    recommendation: string;
+  };
+}
+
+export function analyzeHourlyUsage(entries: UsageEntry[]): HourlyUsage[] {
+  const hourlyMap = new Map<number, HourlyUsage>();
+  
+  // Initialize all 24 hours
+  for (let hour = 0; hour < 24; hour++) {
+    hourlyMap.set(hour, {
+      hour,
+      totalTokens: 0,
+      cost: 0,
+      conversationCount: 0,
+      sonnetTokens: 0,
+      opusTokens: 0,
+    });
+  }
+  
+  const conversations = new Set<string>();
+  
+  for (const entry of entries) {
+    const hour = new Date(entry.timestamp).getHours();
+    const hourData = hourlyMap.get(hour)!;
+    
+    hourData.totalTokens += entry.total_tokens;
+    hourData.cost += calculateCost(entry);
+    
+    if (entry.model.includes('sonnet')) {
+      hourData.sonnetTokens += entry.total_tokens;
+    } else if (entry.model.includes('opus')) {
+      hourData.opusTokens += entry.total_tokens;
+    }
+    
+    // Track unique conversations per hour
+    const convKey = `${hour}-${entry.conversationId}`;
+    if (!conversations.has(convKey)) {
+      conversations.add(convKey);
+      hourData.conversationCount++;
+    }
+  }
+  
+  return Array.from(hourlyMap.values());
+}
+
+export function analyzeModelEfficiency(entries: UsageEntry[]): ModelEfficiency[] {
+  const modelMap = new Map<string, {
+    totalTokens: number;
+    totalCost: number;
+    conversations: Set<string>;
+  }>();
+  
+  for (const entry of entries) {
+    if (!modelMap.has(entry.model)) {
+      modelMap.set(entry.model, {
+        totalTokens: 0,
+        totalCost: 0,
+        conversations: new Set(),
+      });
+    }
+    
+    const modelData = modelMap.get(entry.model)!;
+    modelData.totalTokens += entry.total_tokens;
+    modelData.totalCost += calculateCost(entry);
+    modelData.conversations.add(entry.conversationId);
+  }
+  
+  return Array.from(modelMap.entries()).map(([model, data]) => ({
+    model,
+    avgTokensPerConversation: data.totalTokens / data.conversations.size,
+    avgCostPerConversation: data.totalCost / data.conversations.size,
+    totalConversations: data.conversations.size,
+    totalCost: data.totalCost,
+    costPerToken: data.totalCost / data.totalTokens,
+  }));
+}
+
+export function getEfficiencyInsights(entries: UsageEntry[]): EfficiencyInsights {
+  const hourlyUsage = analyzeHourlyUsage(entries);
+  const modelEfficiency = analyzeModelEfficiency(entries);
+  
+  // Find peak hours (top 3 highest usage hours)
+  const peakHours = hourlyUsage
+    .sort((a, b) => b.totalTokens - a.totalTokens)
+    .slice(0, 3)
+    .map(h => h.hour)
+    .sort((a, b) => a - b);
+  
+  // Calculate potential savings from smarter model usage
+  const opusEfficiency = modelEfficiency.find(m => m.model.includes('opus'));
+  const sonnetEfficiency = modelEfficiency.find(m => m.model.includes('sonnet'));
+  
+  let potentialSavings = 0;
+  let recommendation = "Continue current usage patterns";
+  
+  if (opusEfficiency && sonnetEfficiency) {
+    const costDifference = opusEfficiency.costPerToken - sonnetEfficiency.costPerToken;
+    // Assume 30% of Opus conversations could use Sonnet
+    const opusTokens = entries
+      .filter(e => e.model.includes('opus'))
+      .reduce((sum, e) => sum + e.total_tokens, 0);
+    potentialSavings = opusTokens * 0.3 * costDifference;
+    
+    if (potentialSavings > 100) { // $100+ potential savings
+      recommendation = `Consider using Sonnet 4 for simpler tasks. Could save ~$${potentialSavings.toFixed(0)}/month by switching 30% of Opus conversations to Sonnet.`;
+    }
+  }
+  
+  return {
+    hourlyUsage,
+    peakHours,
+    modelEfficiency,
+    costSavingsOpportunity: {
+      potentialSavings,
+      recommendation,
+    },
+  };
+}
+
 export function getRateLimitInfo(weeklyUsage: WeeklyUsage, plan: PlanType): RateLimitInfo {
   const limits = RATE_LIMITS[plan];
   

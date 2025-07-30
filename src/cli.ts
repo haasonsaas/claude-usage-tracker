@@ -3,8 +3,8 @@
 import { program } from 'commander';
 import chalk from 'chalk';
 import { loadUsageData } from './data-loader.js';
-import { aggregateDailyUsage, getCurrentWeekUsage, getRateLimitInfo } from './analyzer.js';
-import { formatDailyTable, formatWeeklySummary, formatRateLimitStatus, formatHeader } from './formatters.js';
+import { aggregateDailyUsage, getCurrentWeekUsage, getRateLimitInfo, getEfficiencyInsights } from './analyzer.js';
+import { formatDailyTable, formatWeeklySummary, formatRateLimitStatus, formatHeader, formatEfficiencyInsights } from './formatters.js';
 import type { PlanType } from './config.js';
 
 program
@@ -136,6 +136,38 @@ program
         console.log(formatHeader(`Rate Limits - ${plan} Plan`));
         console.log(formatRateLimitStatus(rateLimitInfo));
       }
+      
+    } catch (error) {
+      console.error(chalk.red('Error loading usage data:'), error);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('insights')
+  .description('Show detailed efficiency insights and optimization recommendations')
+  .option('-d, --days <days>', 'Number of days to analyze', '30')
+  .action(async (options) => {
+    try {
+      console.log(chalk.dim('Loading usage data...'));
+      const entries = await loadUsageData();
+      
+      if (entries.length === 0) {
+        console.log(chalk.yellow('No usage data found. Make sure Claude Code has been used and data is available.'));
+        return;
+      }
+      
+      // Filter to specified number of days
+      const days = parseInt(options.days);
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - days);
+      
+      const filteredEntries = entries.filter(entry => 
+        new Date(entry.timestamp) >= cutoffDate
+      );
+      
+      const insights = getEfficiencyInsights(filteredEntries);
+      console.log(formatEfficiencyInsights(insights));
       
     } catch (error) {
       console.error(chalk.red('Error loading usage data:'), error);

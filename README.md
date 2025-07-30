@@ -33,6 +33,9 @@ node dist/cli.js daily --days 7
 
 # Compare all plans
 node dist/cli.js check-limits
+
+# Get efficiency insights
+node dist/cli.js insights
 ```
 
 ## Usage
@@ -66,6 +69,7 @@ See how your current usage compares across all Claude Code plans.
 | `daily` | Show daily usage breakdown | `-d, --days <days>` - Number of days to show (default: 7) |
 | `week` | Show current week summary | None |
 | `check-limits` | Check rate limit status for all plans | None |
+| `insights` | Show detailed efficiency insights and optimization recommendations | `-d, --days <days>` - Number of days to analyze (default: 30) |
 
 ## Rate Limits (Effective August 28, 2025)
 

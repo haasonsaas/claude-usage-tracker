@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import Table from 'cli-table3';
 import type { DailyUsage, WeeklyUsage, RateLimitInfo } from './types.js';
+import type { EfficiencyInsights, HourlyUsage, ModelEfficiency } from './analyzer.js';
 
 export function formatTokenCount(count: number): string {
   if (count >= 1_000_000) {
@@ -112,4 +113,93 @@ export function formatRateLimitStatus(rateLimitInfo: RateLimitInfo): string {
 export function formatHeader(title: string): string {
   const line = '═'.repeat(title.length + 4);
   return chalk.bold.blue(`\n╔${line}╗\n║ ${title} ║\n╚${line}╝\n`);
+}
+
+export function formatHourlyUsage(hourlyUsage: HourlyUsage[]): string {
+  const table = new Table({
+    head: ['Hour', 'Tokens', 'Cost', 'Conversations', 'Sonnet %', 'Opus %'],
+    style: { head: [], border: [] },
+  });
+
+  // Sort by hour and only show hours with usage
+  const activeHours = hourlyUsage
+    .filter(h => h.totalTokens > 0)
+    .sort((a, b) => a.hour - b.hour);
+
+  for (const hour of activeHours) {
+    const timeStr = `${hour.hour.toString().padStart(2, '0')}:00`;
+    const sonnetPercent = hour.totalTokens > 0 
+      ? ((hour.sonnetTokens / hour.totalTokens) * 100).toFixed(0) + '%'
+      : '0%';
+    const opusPercent = hour.totalTokens > 0 
+      ? ((hour.opusTokens / hour.totalTokens) * 100).toFixed(0) + '%'
+      : '0%';
+
+    table.push([
+      timeStr,
+      formatTokenCount(hour.totalTokens),
+      formatCost(hour.cost),
+      hour.conversationCount.toString(),
+      sonnetPercent,
+      opusPercent,
+    ]);
+  }
+
+  return table.toString();
+}
+
+export function formatModelEfficiency(modelEfficiency: ModelEfficiency[]): string {
+  const table = new Table({
+    head: ['Model', 'Conversations', 'Avg Tokens/Conv', 'Avg Cost/Conv', 'Cost/Token'],
+    style: { head: [], border: [] },
+  });
+
+  // Sort by total cost (highest first)
+  const sortedModels = modelEfficiency.sort((a, b) => b.totalCost - a.totalCost);
+
+  for (const model of sortedModels) {
+    const modelName = model.model.includes('sonnet') ? 'Sonnet 4' :
+                     model.model.includes('opus') ? 'Opus 4' : 
+                     model.model;
+
+    table.push([
+      modelName,
+      model.totalConversations.toString(),
+      formatTokenCount(model.avgTokensPerConversation),
+      formatCost(model.avgCostPerConversation),
+      formatCost(model.costPerToken * 1000) + '/1K',
+    ]);
+  }
+
+  return table.toString();
+}
+
+export function formatEfficiencyInsights(insights: EfficiencyInsights): string {
+  let output = '';
+
+  // Peak hours analysis
+  output += formatHeader('Peak Usage Hours');
+  const peakHoursStr = insights.peakHours
+    .map(h => `${h.toString().padStart(2, '0')}:00`)
+    .join(', ');
+  output += `Your heaviest usage hours: ${chalk.yellow(peakHoursStr)}\n`;
+  output += `💡 Consider scheduling intensive work during off-peak hours to avoid rate limits.\n\n`;
+
+  // Model efficiency
+  output += formatHeader('Model Efficiency Analysis');
+  output += formatModelEfficiency(insights.modelEfficiency);
+  output += '\n';
+
+  // Cost savings opportunity
+  if (insights.costSavingsOpportunity.potentialSavings > 100) {
+    output += formatHeader('💰 Cost Optimization Opportunity');
+    output += chalk.green(`Potential monthly savings: $${insights.costSavingsOpportunity.potentialSavings.toFixed(0)}\n`);
+    output += `${insights.costSavingsOpportunity.recommendation}\n\n`;
+  }
+
+  // Hourly breakdown
+  output += formatHeader('Hourly Usage Pattern');
+  output += formatHourlyUsage(insights.hourlyUsage);
+
+  return output;
 }
