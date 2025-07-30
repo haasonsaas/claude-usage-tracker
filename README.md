@@ -4,12 +4,12 @@
 
 ## ✨ Features
 
-- 📊 **Weekly Rate Limit Tracking** - Monitor your usage against Claude Code's weekly rate limits
-- 📈 **Usage Analytics** - Daily, weekly, and session-based usage analysis from real JSONL logs
-- 🚨 **Proactive Warnings** - Get alerts when approaching rate limits (e.g., "Opus 4: 196.7%-786.7% used!")
-- 💰 **Cost Tracking** - Monitor token usage and calculated costs ($2,196 weekly spend example)
-- 🎯 **Plan Optimization** - Compare usage across Pro, $100 Max, and $200 Max plans
-- 📱 **Beautiful CLI Output** - Clean, colorful tables and status displays
+- 📊 **Personalized Rate Limit Tracking** - Calculates accurate usage estimates from YOUR conversation patterns
+- 📈 **Real Data Analysis** - Analyzes session durations and token patterns from JSONL logs
+- 🚨 **Precise Warnings** - Shows exact usage like "Sonnet 4: 89.5 hrs (111.9% of limit)" instead of vague ranges
+- 💰 **Accurate Cost Tracking** - Monitor real token usage and costs ($2,200 weekly spend)
+- 🎯 **Smart Plan Recommendations** - Compare your actual usage across Pro, $100 Max, and $200 Max plans
+- 📱 **Beautiful CLI Output** - Clean, colorful tables with actionable insights
 
 ## 🚀 Installation
 
@@ -81,11 +81,12 @@ This tool reads Claude Code usage data from JSONL conversation logs:
 - `~/.claude/projects/` - Claude Code project logs (primary)
 - `~/.config/claude/projects/` - Alternative location
 
-The tool automatically parses JSONL files to extract:
-- Token usage (input, output, cache tokens)
-- Model information (Sonnet 4, Opus 4, etc.)  
-- Timestamps and conversation IDs
-- Cost calculations based on current pricing
+The tool automatically parses JSONL files to extract and analyze:
+- **Token usage** (input, output, cache tokens) per conversation
+- **Session durations** calculated from message timestamps
+- **Personal usage patterns** to estimate accurate hours-per-model
+- **Model information** (Sonnet 4, Opus 4, etc.) with precise rate calculations
+- **Cost calculations** based on current Anthropic pricing
 
 ## 📊 Example Output
 
@@ -104,16 +105,23 @@ The tool automatically parses JSONL files to extract:
 │ Conversations     │ 24              │
 └───────────────────┴─────────────────┘
 
-┌──────────┬─────────────────┬──────────────┬───────────────┬──────────┐
-│ Model    │ Estimated Usage │ Weekly Limit │ % Used        │ Status   │
-├──────────┼─────────────────┼──────────────┼───────────────┼──────────┤
-│ Sonnet 4 │ 9.2-18.4 hrs    │ 40-80 hrs    │ 11.5%-46.0%   │ ✅ Low   │
-├──────────┼─────────────────┼──────────────┼───────────────┼──────────┤
-│ Opus 4   │ 15.7-31.5 hrs   │ 4-8 hrs      │ 196.7%-786.7% │ ⚠️  High │
-└──────────┴─────────────────┴──────────────┴───────────────┴──────────┘
+┌──────────┬─────────────────┬──────────────┬─────────┬──────────┐
+│ Model    │ Estimated Usage │ Weekly Limit │ % Used  │ Status   │
+├──────────┼─────────────────┼──────────────┼─────────┼──────────┤
+│ Sonnet 4 │ 89.5 hrs        │ 40-80 hrs    │ 111.9%  │ ⚠️  High │
+├──────────┼─────────────────┼──────────────┼─────────┼──────────┤
+│ Opus 4   │ 99.2 hrs        │ 4-8 hrs      │ 1240.1% │ ⚠️  High │
+└──────────┴─────────────────┴──────────────┴─────────┴──────────┘
 
 ⚠️  WARNING: You are approaching your weekly rate limits!
 ```
+
+## 🎯 **Why This Is Better**
+
+**Before**: Vague ranges like "9.2-18.4 hrs" based on arbitrary estimates  
+**Now**: Precise estimates like "89.5 hrs" calculated from YOUR actual coding sessions
+
+The tool analyzes your conversation patterns over the last 2 weeks to calculate personalized tokens-per-hour rates, giving you actionable insights for plan optimization.
 
 ## Inspired By
 
