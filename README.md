@@ -9,6 +9,7 @@
 - 🚨 **Precise Warnings** - Shows exact usage like "Sonnet 4: 89.5 hrs (111.9% of limit)" instead of vague ranges
 - 💰 **Accurate Cost Tracking** - Monitor real token usage and costs ($2,200 weekly spend)
 - 🎯 **Smart Plan Recommendations** - Compare your actual usage across Pro, $100 Max, and $200 Max plans
+- 🤖 **AI Model Advisor** - Get real-time recommendations on whether to use Sonnet vs Opus for maximum savings
 - 📱 **Beautiful CLI Output** - Clean, colorful tables with actionable insights
 
 ## 🚀 Installation
@@ -36,6 +37,9 @@ node dist/cli.js check-limits
 
 # Get efficiency insights
 node dist/cli.js insights
+
+# Get model recommendation
+node dist/cli.js recommend "Write a REST API"
 ```
 
 ## Usage
@@ -61,6 +65,15 @@ claude-usage check-limits
 
 See how your current usage compares across all Claude Code plans.
 
+### Get Model Recommendations
+```bash
+claude-usage recommend "Write a function to sort arrays"
+# or interactive mode
+claude-usage recommend
+```
+
+Get AI-powered recommendations on whether to use Sonnet 4 or Opus 4 for your specific task, with cost savings calculations.
+
 ## Commands
 
 | Command | Description | Options |
@@ -70,6 +83,7 @@ See how your current usage compares across all Claude Code plans.
 | `week` | Show current week summary | None |
 | `check-limits` | Check rate limit status for all plans | None |
 | `insights` | Show detailed efficiency insights and optimization recommendations | `-d, --days <days>` - Number of days to analyze (default: 30) |
+| `recommend` | Get AI-powered model recommendation for your task | `[prompt]` - Task description (optional, will prompt interactively) |
 
 ## Rate Limits (Effective August 28, 2025)
 

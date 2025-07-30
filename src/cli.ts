@@ -5,6 +5,7 @@ import chalk from 'chalk';
 import { loadUsageData } from './data-loader.js';
 import { aggregateDailyUsage, getCurrentWeekUsage, getRateLimitInfo, getEfficiencyInsights } from './analyzer.js';
 import { formatDailyTable, formatWeeklySummary, formatRateLimitStatus, formatHeader, formatEfficiencyInsights } from './formatters.js';
+import { ModelAdvisor } from './model-advisor.js';
 import type { PlanType } from './config.js';
 
 program
@@ -172,6 +173,55 @@ program
     } catch (error) {
       console.error(chalk.red('Error loading usage data:'), error);
       process.exit(1);
+    }
+  });
+
+program
+  .command('recommend')
+  .description('Get model recommendation for a specific task or prompt')
+  .argument('[prompt]', 'The task or prompt to analyze (optional - will prompt interactively)')
+  .action(async (promptArg) => {
+    const advisor = new ModelAdvisor();
+    
+    let prompt = promptArg;
+    
+    if (!prompt) {
+      // Interactive mode
+      const readline = await import('readline');
+      const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+      });
+      
+      console.log(chalk.blue.bold('🤖 Model Advisor - Interactive Mode\n'));
+      console.log(chalk.gray('Describe your task or paste your prompt below:'));
+      console.log(chalk.gray('(Press Ctrl+C to exit)\n'));
+      
+      prompt = await new Promise<string>((resolve) => {
+        rl.question(chalk.cyan('Your task: '), (answer) => {
+          rl.close();
+          resolve(answer);
+        });
+      });
+      
+      if (!prompt.trim()) {
+        console.log(chalk.yellow('No prompt provided. Exiting.'));
+        return;
+      }
+    }
+    
+    console.log(); // Add spacing
+    
+    const classification = advisor.classifyTask(prompt);
+    const recommendation = advisor.getModelRecommendation(classification);
+    
+    console.log(advisor.formatRecommendation(classification, recommendation));
+    
+    // Show cost savings potential
+    if (recommendation.costSavings && recommendation.costSavings > 0) {
+      console.log(chalk.green.bold(`💡 Daily Savings Potential:`));
+      console.log(chalk.green(`If you have 10 similar conversations: $${(recommendation.costSavings * 10).toFixed(2)}`));
+      console.log(chalk.green(`Monthly potential: $${(recommendation.costSavings * 10 * 30).toFixed(0)}\n`));
     }
   });
 
