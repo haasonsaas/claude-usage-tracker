@@ -65,14 +65,16 @@ export async function loadUsageData(): Promise<UsageEntry[]> {
 						) {
 							const usage = data.message.usage;
 							const rawEntry = {
-								id: data.requestId || `${data.sessionId}-${Date.now()}`,
 								timestamp: data.timestamp || new Date().toISOString(),
 								conversationId: data.sessionId || "unknown",
 								model: data.message.model,
-								input_tokens: usage.input_tokens || 0,
-								output_tokens: usage.output_tokens || 0,
+								requestId: data.requestId || `${data.sessionId}-${Date.now()}`,
+								prompt_tokens: usage.input_tokens || 0,
+								completion_tokens: usage.output_tokens || 0,
 								total_tokens:
 									(usage.input_tokens || 0) + (usage.output_tokens || 0),
+								cache_creation_input_tokens: usage.cache_creation_input_tokens || 0,
+								cache_read_input_tokens: usage.cache_read_input_tokens || 0,
 								isBatchAPI: false, // Default assumption
 							};
 
