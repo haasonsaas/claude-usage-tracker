@@ -226,59 +226,57 @@ export class ModelAdvisor {
 		taskType: TaskClassification["taskType"],
 		model: keyof typeof MODEL_PRICING,
 	): string {
-		const reasons = {
+		const reasons: Record<TaskClassification["taskType"], Record<string, string>> = {
 			code_generation: {
-				sonnet:
+				"claude-3.5-sonnet-20241022":
 					"Sonnet 4 excels at code generation with 78% cost savings. Quality is excellent for most coding tasks.",
-				opus: "Opus 4 for the most complex algorithms or when you need the highest code quality.",
+				"claude-opus-4-20250514": "Opus 4 for the most complex algorithms or when you need the highest code quality.",
 			},
 			debugging: {
-				sonnet:
+				"claude-3.5-sonnet-20241022":
 					"Sonnet 4 can handle most debugging tasks effectively with significant cost savings.",
-				opus: "Opus 4 recommended for complex debugging - better at understanding intricate code relationships.",
+				"claude-opus-4-20250514": "Opus 4 recommended for complex debugging - better at understanding intricate code relationships.",
 			},
 			code_review: {
-				sonnet:
+				"claude-3.5-sonnet-20241022":
 					"Sonnet 4 provides thorough code reviews with excellent cost efficiency.",
-				opus: "Opus 4 for critical code reviews where you need the deepest analysis.",
+				"claude-opus-4-20250514": "Opus 4 for critical code reviews where you need the deepest analysis.",
 			},
 			documentation: {
-				sonnet:
+				"claude-3.5-sonnet-20241022":
 					"Sonnet 4 is perfect for documentation - clear writing with major cost savings.",
-				opus: "Opus 4 overkill for most documentation tasks.",
+				"claude-opus-4-20250514": "Opus 4 overkill for most documentation tasks.",
 			},
 			architecture: {
-				sonnet:
+				"claude-3.5-sonnet-20241022":
 					"Sonnet 4 can handle many architecture discussions cost-effectively.",
-				opus: "Opus 4 recommended for complex system design - better strategic thinking.",
+				"claude-opus-4-20250514": "Opus 4 recommended for complex system design - better strategic thinking.",
 			},
 			complex_analysis: {
-				sonnet: "Sonnet 4 may miss nuances in complex analysis.",
-				opus: "Opus 4 essential for deep analysis - superior reasoning and context understanding.",
+				"claude-3.5-sonnet-20241022": "Sonnet 4 may miss nuances in complex analysis.",
+				"claude-opus-4-20250514": "Opus 4 essential for deep analysis - superior reasoning and context understanding.",
 			},
 			simple_query: {
-				sonnet:
+				"claude-3.5-sonnet-20241022":
 					"Sonnet 4 perfect for straightforward questions - massive cost savings.",
-				opus: "Opus 4 wasteful for simple queries.",
+				"claude-opus-4-20250514": "Opus 4 wasteful for simple queries.",
 			},
 			refactoring: {
-				sonnet:
+				"claude-3.5-sonnet-20241022":
 					"Sonnet 4 excellent for refactoring with great cost efficiency.",
-				opus: "Opus 4 for complex refactoring of large codebases.",
+				"claude-opus-4-20250514": "Opus 4 for complex refactoring of large codebases.",
 			},
 		};
 
 		const taskReasons = reasons[taskType];
-		return taskReasons
-			? taskReasons[model]
-			: `${model === "sonnet" ? "Sonnet 4 for cost efficiency" : "Opus 4 for maximum capability"}`;
+		return taskReasons?.[model] || `${model.includes("sonnet") ? "Sonnet 4 for cost efficiency" : "Opus 4 for maximum capability"}`;
 	}
 
 	private getAlternativeTradeoffs(
 		_taskType: TaskClassification["taskType"],
 		alternativeModel: keyof typeof MODEL_PRICING,
 	): string {
-		if (alternativeModel === "opus") {
+		if (alternativeModel.includes("opus")) {
 			return "Higher cost but maximum reasoning capability and nuance detection";
 		} else {
 			return "78% cost savings but may miss some nuances in very complex tasks";

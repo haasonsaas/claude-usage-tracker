@@ -1,4 +1,4 @@
-import { watch } from "node:fs";
+import { watch, type FSWatcher } from "node:fs";
 import { stat } from "node:fs/promises";
 import chalk from "chalk";
 import { calculateCost, getCurrentWeekUsage } from "./analyzer.js";
@@ -29,7 +29,7 @@ export interface ConversationEvent {
 
 export class UsageWatcher {
 	private lastStats: LiveStats | null = null;
-	private watchers: fs.FSWatcher[] = [];
+	private watchers: FSWatcher[] = [];
 	private isWatching = false;
 	private updateInterval: NodeJS.Timeout | null = null;
 	private conversationHistory: ConversationEvent[] = [];
@@ -209,7 +209,7 @@ export class UsageWatcher {
 					todayConversations > 0 ? todayCost / todayConversations : 0,
 			};
 		} catch (_error) {
-			console.error(chalk.red("Error updating stats:"), error);
+			console.error(chalk.red("Error updating stats:"), _error);
 		}
 	}
 

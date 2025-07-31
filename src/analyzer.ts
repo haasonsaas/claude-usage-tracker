@@ -405,7 +405,7 @@ export function getRateLimitInfo(
 				min:
 					(weeklyUsage.estimatedHours.opus4.min / limits.weekly.opus4.max) *
 					100,
-				max: (weekly.estimatedHours.opus4.max / limits.weekly.opus4.min) * 100,
+				max: (weeklyUsage.estimatedHours.opus4.max / limits.weekly.opus4.min) * 100,
 			},
 		},
 	};
