@@ -51,7 +51,7 @@ export const MODEL_PRICING = new Proxy({} as any, {
 	},
 });
 
-export const BATCH_API_DISCOUNT = (() => getBatchApiDiscount()) as any as number;
+export const BATCH_API_DISCOUNT = getBatchApiDiscount();
 
 export const RATE_LIMITS = new Proxy({} as any, {
 	get(_target, prop) {

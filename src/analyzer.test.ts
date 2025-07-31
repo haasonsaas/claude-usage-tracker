@@ -38,9 +38,10 @@ describe('Analyzer', () => {
       model: 'claude-3.5-sonnet-20241022',
       conversationId: 'conv-1',
       requestId: 'req-3',
-      prompt_tokens: 500,
-      completion_tokens: 300,
-      total_tokens: 800,
+      prompt_tokens: 1000,  // Same as first entry
+      completion_tokens: 500,  // Same as first entry
+      total_tokens: 1500,  // Same as first entry
+      isBatchAPI: true,
     },
   ];
 
@@ -94,7 +95,7 @@ describe('Analyzer', () => {
       expect(hour11).toBeDefined();
       
       // Hour 10 has 2 entries (regular + batch), hour 11 has 1
-      expect(hour10!.totalTokens).toBe(1500 + 800); // Both sonnet entries
+      expect(hour10!.totalTokens).toBe(1500 + 1500); // Both sonnet entries (same tokens now)
       expect(hour11!.totalTokens).toBe(1200); // Opus entry
       expect(hour10!.conversationCount).toBe(1); // Same conversation
       expect(hour11!.conversationCount).toBe(1); // Different conversation
@@ -109,7 +110,7 @@ describe('Analyzer', () => {
       
       const day = dailyUsage.get('2024-01-15');
       expect(day).toBeDefined();
-      expect(day!.totalTokens).toBe(3500); // Sum of all tokens
+      expect(day!.totalTokens).toBe(4200); // Sum of all tokens (1500+1200+1500)
       expect(day!.conversationCount).toBe(2); // Two unique conversations
     });
   });

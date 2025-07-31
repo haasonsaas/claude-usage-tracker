@@ -273,7 +273,7 @@ export function analyzeHourlyUsage(entries: UsageEntry[]): HourlyUsage[] {
 	const conversations = new Set<string>();
 
 	for (const entry of entries) {
-		const hour = new Date(entry.timestamp).getHours();
+		const hour = new Date(entry.timestamp).getUTCHours();
 		const hourData = hourlyMap.get(hour);
 		if (hourData) {
 			hourData.totalTokens += entry.total_tokens;

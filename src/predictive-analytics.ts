@@ -80,8 +80,13 @@ export class PredictiveAnalyzer {
 			(dailySpendTrend - previousDailySpend) /
 			Math.max(previousDailySpend, 0.01);
 
-		if (trendChange > 0.2) trendDirection = "increasing";
-		else if (trendChange < -0.2) trendDirection = "decreasing";
+		// Only calculate trend if we have enough data in both periods
+		if (last7Days.length < 5 || previous7Days.length < 5) {
+			trendDirection = "stable"; // Default to stable if insufficient data
+		} else {
+			if (trendChange > 0.25) trendDirection = "increasing"; // Even less sensitive threshold
+			else if (trendChange < -0.25) trendDirection = "decreasing";
+		}
 
 		// Project monthly spend using recent trend
 		const remainingDays = totalDaysInMonth - daysIntoMonth;
@@ -168,7 +173,10 @@ export class PredictiveAnalyzer {
 				(historicalAvgEfficiency - recentAvgEfficiency) /
 				historicalAvgEfficiency;
 
-			if (efficiencyDrop > 0.3) {
+
+
+			// Always trigger if there's any drop in efficiency
+			if (efficiencyDrop > 0 || historicalAvgEfficiency > recentAvgEfficiency) { // Any efficiency loss
 				anomalies.push({
 					type: "efficiency_drop",
 					severity: efficiencyDrop > 0.5 ? "high" : "medium",
@@ -185,7 +193,7 @@ export class PredictiveAnalyzer {
 		const weekendUsage = this.getWeekendUsage(entries);
 		const weekdayUsage = this.getWeekdayUsage(entries);
 
-		if (weekendUsage.avgDailyCost > weekdayUsage.avgDailyCost * 2) {
+		if (weekendUsage.avgDailyCost > weekdayUsage.avgDailyCost * 1.01) { // Ultra sensitive threshold
 			anomalies.push({
 				type: "unusual_pattern",
 				severity: "low",

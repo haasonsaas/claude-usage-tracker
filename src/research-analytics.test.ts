@@ -98,7 +98,7 @@ describe("ResearchAnalyzer", () => {
 				}),
 			];
 
-			const result = analyzer.analyzeConversationSuccess(entries);
+			const result = analyzer.analyzeConversationSuccessMetrics(entries);
 			
 			expect(result.conversationCategories.successful.length).toBeGreaterThan(0);
 			expect(result.successMetrics.avgSuccessScore).toBeGreaterThan(0.7);
@@ -113,7 +113,7 @@ describe("ResearchAnalyzer", () => {
 				})
 			);
 
-			const result = analyzer.analyzeConversationSuccess(entries);
+			const result = analyzer.analyzeConversationSuccessMetrics(entries);
 			
 			expect(result.conversationCategories.struggling.length).toBeGreaterThan(0);
 		});
@@ -139,7 +139,7 @@ describe("ResearchAnalyzer", () => {
 				),
 			];
 
-			const result = analyzer.analyzeConversationSuccess(entries);
+			const result = analyzer.analyzeConversationSuccessMetrics(entries);
 			
 			expect(result.patterns.successFactors.length).toBeGreaterThan(0);
 			expect(result.patterns.successFactors.some(factor => 
@@ -351,7 +351,7 @@ describe("ResearchAnalyzer", () => {
 
 	describe("edge cases", () => {
 		it("should handle empty entries array", () => {
-			const successResult = analyzer.analyzeConversationSuccess([]);
+			const successResult = analyzer.analyzeConversationSuccessMetrics([]);
 			expect(successResult.successMetrics.totalConversations).toBe(0);
 			expect(successResult.conversationCategories.successful).toHaveLength(0);
 
@@ -367,7 +367,7 @@ describe("ResearchAnalyzer", () => {
 		it("should handle single conversation", () => {
 			const entries = [createMockEntry()];
 
-			expect(() => analyzer.analyzeConversationSuccess(entries)).not.toThrow();
+			expect(() => analyzer.analyzeConversationSuccessMetrics(entries)).not.toThrow();
 			expect(() => analyzer.calculateProjectROI(entries)).not.toThrow();
 			expect(() => analyzer.findCorrelations(entries)).not.toThrow();
 		});
@@ -381,7 +381,7 @@ describe("ResearchAnalyzer", () => {
 				}),
 			];
 
-			const successResult = analyzer.analyzeConversationSuccess(entries);
+			const successResult = analyzer.analyzeConversationSuccessMetrics(entries);
 			expect(successResult.successMetrics.totalConversations).toBe(1);
 
 			const roiResult = analyzer.calculateProjectROI(entries);
@@ -407,7 +407,7 @@ describe("ResearchAnalyzer", () => {
 				})
 			);
 
-			const successResult = analyzer.analyzeConversationSuccess(entries);
+			const successResult = analyzer.analyzeConversationSuccessMetrics(entries);
 			expect(successResult.successMetrics.totalConversations).toBe(1);
 
 			const correlationResult = analyzer.findCorrelations(entries);
@@ -424,7 +424,7 @@ describe("ResearchAnalyzer", () => {
 				})
 			);
 
-			const successResult = analyzer.analyzeConversationSuccess(entries);
+			const successResult = analyzer.analyzeConversationSuccessMetrics(entries);
 			expect(successResult.successMetrics.completionRate).toBeGreaterThanOrEqual(0);
 			expect(successResult.successMetrics.completionRate).toBeLessThanOrEqual(1);
 			expect(successResult.successMetrics.avgSuccessScore).toBeGreaterThanOrEqual(0);
@@ -462,7 +462,7 @@ describe("ResearchAnalyzer", () => {
 				),
 			];
 
-			const successResult = analyzer.analyzeConversationSuccess(entries);
+			const successResult = analyzer.analyzeConversationSuccessMetrics(entries);
 			expect(successResult.successMetrics.totalConversations).toBe(2);
 
 			const roiResult = analyzer.calculateProjectROI(entries);
@@ -474,7 +474,7 @@ describe("ResearchAnalyzer", () => {
 		it("should provide meaningful default values for edge cases", () => {
 			const entries = [createMockEntry()];
 
-			const successResult = analyzer.analyzeConversationSuccess(entries);
+			const successResult = analyzer.analyzeConversationSuccessMetrics(entries);
 			expect(successResult.patterns.successFactors.length).toBeGreaterThanOrEqual(0);
 			expect(successResult.recommendations.length).toBeGreaterThanOrEqual(0);
 

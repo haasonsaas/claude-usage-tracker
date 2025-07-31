@@ -195,9 +195,9 @@ export class DeepAnalyzer {
 
 		// Find extreme entries
 		const extremeEntries: Array<{
-			entry: UsageEntry;
-			reason: string;
-			severity: 'high' | 'medium' | 'low';
+			type: 'high_tokens' | 'low_tokens' | 'high_cost';
+			conversationId: string;
+			value: number;
 		}> = [];
 		const highTokenThreshold = 50000;
 		const lowTokenThreshold = 10;

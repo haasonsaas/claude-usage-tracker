@@ -55,7 +55,7 @@ export interface OptimizationSummary {
 
 export class OptimizationAnalyzer {
 	private readonly BATCH_API_DISCOUNT = 0.5; // 50% discount
-	private readonly MIN_BATCH_COST = 0.1; // Minimum cost to consider for batch processing
+	private readonly MIN_BATCH_COST = 0.001; // Minimum cost to consider for batch processing
 
 	clusterConversations(entries: UsageEntry[]): ConversationCluster[] {
 		const conversations = this.groupByConversation(entries);
@@ -122,8 +122,8 @@ export class OptimizationAnalyzer {
 			const savings = currentCost - batchCost;
 			const eligibilityScore = this.calculateBatchEligibility(convEntries);
 
-			// Only include if there's meaningful savings and good eligibility
-			if (savings > 0.05 && eligibilityScore > 0.6) {
+			// Only include if there's meaningful savings and reasonable eligibility
+			if (savings > 0.001 && eligibilityScore > 0.4) {
 				opportunities.push({
 					conversationId,
 					currentCost,
@@ -159,8 +159,8 @@ export class OptimizationAnalyzer {
 				0,
 			);
 
-			// Skip small conversations
-			if (currentCost < 0.05) continue;
+			// Skip very small conversations
+			if (currentCost < 0.001) continue;
 
 			const recommendation = this.analyzeModelSwitch(
 				conversationId,
@@ -337,26 +337,31 @@ export class OptimizationAnalyzer {
 	}
 
 	private calculateBatchEligibility(entries: UsageEntry[]): number {
-		let score = 0;
+		let score = 0.4; // Base eligibility score
 
-		// Longer conversations are better for batch processing
-		if (entries.length > 10) score += 0.3;
-		if (entries.length > 20) score += 0.2;
+		// Check for complexity - high token usage reduces batch eligibility
+		const avgTokens = entries.reduce((sum, e) => sum + e.total_tokens, 0) / entries.length;
+		if (avgTokens > 8000) score -= 0.5; // High complexity conversations less suitable for batching
+		if (avgTokens > 15000) score -= 0.3; // Very high complexity
+
+		// Longer conversations are better for batch processing (if not too complex)
+		if (entries.length > 5 && avgTokens < 8000) score += 0.2;
+		if (entries.length > 10 && avgTokens < 8000) score += 0.1;
 
 		// Non-interactive conversations are ideal
 		const avgTimeBetweenMessages =
 			this.calculateAvgTimeBetweenMessages(entries);
-		if (avgTimeBetweenMessages > 30) score += 0.3; // 30+ seconds between messages
+		if (avgTimeBetweenMessages > 30) score += 0.2; // 30+ seconds between messages
 
-		// Higher cost conversations provide more savings
+		// Higher cost conversations provide more savings (but not if too complex)
 		const totalCost = entries.reduce((sum, e) => sum + calculateCost(e), 0);
-		if (totalCost > 0.5) score += 0.2;
+		if (totalCost > 0.01 && avgTokens < 10000) score += 0.1;
 
 		// Consistent model usage is better for batch
 		const models = new Set(entries.map((e) => e.model));
 		if (models.size === 1) score += 0.1;
 
-		return Math.min(1.0, score);
+		return Math.max(0, Math.min(1.0, score));
 	}
 
 	private calculateAvgTimeBetweenMessages(entries: UsageEntry[]): number {
@@ -413,7 +418,7 @@ export class OptimizationAnalyzer {
 		const hasCodeContext = this.detectCodeContext(entries);
 
 		// Suggest Sonnet for Opus conversations with low complexity
-		if (isCurrentlyOpus && complexity < 0.5 && !hasCodeContext) {
+		if (isCurrentlyOpus && complexity < 0.3 && !hasCodeContext) {
 			const projectedCost = currentCost * 0.22; // 78% savings with Sonnet
 			return {
 				conversationId,
@@ -514,7 +519,7 @@ export class OptimizationAnalyzer {
 		
 		// Convert to cluster analysis format
 		for (const [clusterKey, conversationIds] of clusterMap) {
-			if (conversationIds.length < 2) continue; // Only clusters with multiple conversations
+			// Include all clusters, even single conversations for analysis
 			
 			const clusterEntries = conversationIds.flatMap(id => 
 				conversations.get(id) || []
