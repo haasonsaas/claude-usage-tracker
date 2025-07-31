@@ -51,8 +51,17 @@ const ConfigSchema = z.object({
 export type AppConfig = z.infer<typeof ConfigSchema>;
 
 let cachedConfig: AppConfig | null = null;
+let testConfig: AppConfig | null = null;
 
 export function loadConfig(configPath?: string): AppConfig {
+	// In test environment, use test config if available
+	if (process.env.NODE_ENV === "test" && !configPath) {
+		const testConfig = getTestConfig();
+		if (testConfig) {
+			return testConfig;
+		}
+	}
+
 	// Get config path from CLI if not explicitly provided
 	if (!configPath && typeof process !== 'undefined' && process.argv) {
 		const configIndex = process.argv.findIndex(arg => arg === '-c' || arg === '--config');
@@ -119,6 +128,23 @@ export function loadConfig(configPath?: string): AppConfig {
 
 export function clearConfigCache(): void {
 	cachedConfig = null;
+}
+
+function getTestConfig(): AppConfig | null {
+	return testConfig;
+}
+
+export function setTestConfig(config: any): void {
+	try {
+		testConfig = ConfigSchema.parse(config);
+	} catch (error) {
+		console.warn("Invalid test config:", error);
+		testConfig = null;
+	}
+}
+
+export function clearTestConfig(): void {
+	testConfig = null;
 }
 
 // Helper functions to access config values

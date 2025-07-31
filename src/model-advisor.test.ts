@@ -1,7 +1,17 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { ModelAdvisor } from './model-advisor.js';
+import { setupTestConfig } from './test-utils.js';
 
 describe('ModelAdvisor', () => {
+  let cleanup: () => void;
+
+  beforeEach(() => {
+    cleanup = setupTestConfig();
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
   it('should recommend Sonnet for code generation tasks', () => {
     const advisor = new ModelAdvisor();
     const prompt = 'Write a function to sort an array in TypeScript.';
