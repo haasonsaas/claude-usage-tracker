@@ -11,6 +11,7 @@
 - 🎯 **Smart Plan Recommendations** - Compare your actual usage across Pro, $100 Max, and $200 Max plans
 - 🤖 **AI Model Advisor** - Get real-time recommendations on whether to use Sonnet vs Opus for maximum savings
 - 🔴 **Live Monitoring** - Real-time dashboard with burn rate analysis and efficiency alerts
+- 📏 **Conversation Length Analytics** - Analyze conversation patterns and get optimization recommendations
 - 📱 **Beautiful CLI Output** - Clean, colorful tables with actionable insights
 
 ## 🚀 Installation
@@ -44,6 +45,9 @@ node dist/cli.js recommend "Write a REST API"
 
 # Live monitoring (press Ctrl+C to stop)
 node dist/cli.js watch
+
+# Analyze conversation length patterns
+node dist/cli.js length
 ```
 
 ## Usage
@@ -89,6 +93,18 @@ Real-time monitoring dashboard showing:
 - **Weekly progress** toward rate limits
 - **Real-time alerts** for high burn rates or inefficient conversations
 
+### Conversation Length Analytics
+```bash
+claude-usage length
+```
+
+Analyze your conversation patterns and get insights on optimal conversation lengths:
+- **Length distribution** across quick, medium, deep, and marathon conversations
+- **Success rate analysis** by conversation length category
+- **Project-specific patterns** with tailored recommendations
+- **Efficiency metrics** to optimize your Claude usage
+- **Actionable recommendations** for breaking down complex tasks
+
 ## Commands
 
 | Command | Description | Options |
@@ -100,6 +116,7 @@ Real-time monitoring dashboard showing:
 | `insights` | Show detailed efficiency insights and optimization recommendations | `-d, --days <days>` - Number of days to analyze (default: 30) |
 | `recommend` | Get AI-powered model recommendation for your task | `[prompt]` - Task description (optional, will prompt interactively) |
 | `watch` | Live monitoring with real-time cost tracking and burn rate analysis | None - Press Ctrl+C to stop |
+| `length` | Analyze conversation length patterns and get optimization recommendations | None |
 
 ## Rate Limits (Effective August 28, 2025)
 
@@ -148,6 +165,45 @@ The tool automatically parses JSONL files to extract and analyze:
 └──────────┴─────────────────┴──────────────┴─────────┴──────────┘
 
 ⚠️  WARNING: You are approaching your weekly rate limits!
+```
+
+### Conversation Length Analytics Output
+
+```
+╔═══════════════════════════════════╗
+║ 📏 Conversation Length Analysis ║
+╚═══════════════════════════════════╝
+
+📊 Overview
+Total conversations: 229
+Optimal range: 21-100 messages
+Deep exploration is most effective for complex problems
+
+📈 Length Distribution
+Quick (1-5 msgs): 3.5% (8 conversations)
+Medium (6-20 msgs): 5.2% (12 conversations)  
+Deep (21-100 msgs): 19.2% (44 conversations)
+Marathon (100+ msgs): 72.1% (165 conversations)
+
+🏗️ Project Profiles
+
+evalops-platform:
+  Conversations: 156
+  Avg length: 892.3 messages
+  Optimal range: 21-100 messages
+  Deep exploration conversations are most effective
+  💡 Recommendations:
+    • Break down complex tasks into smaller conversations
+    • Consider focusing on specific problems to improve efficiency
+
+🔍 Key Insights
+• Your average conversation length is 821 messages
+• Your most successful conversations average 102 messages - shorter than average
+• Deep conversations (21-100 msgs) show highest success rates
+
+💡 Recommendations
+• Consider breaking down complex problems into multiple focused conversations
+• Marathon conversations show lower success rates - try shorter, targeted sessions
 ```
 
 ## 🎯 **Why This Is Better**
