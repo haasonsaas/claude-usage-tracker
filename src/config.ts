@@ -11,9 +11,13 @@ export const MODEL_PRICING = {
   'claude-3-sonnet-20240229': { input: 3.0, output: 15.0, cached: 0.375 },
   'claude-3.5-sonnet-20241022': { input: 3.0, output: 15.0, cached: 0.375 },
   'claude-3-haiku-20240307': { input: 0.25, output: 1.25, cached: 0.03125 },
+  'claude-3.5-haiku-20241022': { input: 0.8, output: 4.0, cached: 0.1 },
   'claude-sonnet-4-20250514': { input: 3.0, output: 15.0, cached: 0.375 },
   'claude-opus-4-20250514': { input: 15.0, output: 75.0, cached: 1.875 },
 } as const;
+
+// Batch API pricing (50% discount on all models)
+export const BATCH_API_DISCOUNT = 0.5;
 
 export const RATE_LIMITS = {
   'Pro': {

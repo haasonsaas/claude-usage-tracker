@@ -1,6 +1,6 @@
 import { startOfWeek, endOfWeek, isWithinInterval, format } from 'date-fns';
 import type { UsageEntry, DailyUsage, WeeklyUsage, RateLimitInfo } from './types.js';
-import { MODEL_PRICING, RATE_LIMITS, TOKENS_PER_HOUR_ESTIMATES, type PlanType } from './config.js';
+import { MODEL_PRICING, RATE_LIMITS, TOKENS_PER_HOUR_ESTIMATES, BATCH_API_DISCOUNT, type PlanType } from './config.js';
 
 export function calculateCost(entry: UsageEntry): number {
   if (entry.cost !== undefined) return entry.cost;
@@ -14,7 +14,14 @@ export function calculateCost(entry: UsageEntry): number {
   const cacheCreationCost = ((entry.cache_creation_input_tokens || 0) / 1_000_000) * pricing.input;
   const cacheReadCost = ((entry.cache_read_input_tokens || 0) / 1_000_000) * pricing.cached;
   
-  return inputCost + outputCost + cacheCreationCost + cacheReadCost;
+  let totalCost = inputCost + outputCost + cacheCreationCost + cacheReadCost;
+  
+  // Apply batch API discount if applicable
+  if (entry.isBatchAPI) {
+    totalCost *= (1 - BATCH_API_DISCOUNT);
+  }
+  
+  return totalCost;
 }
 
 export function aggregateDailyUsage(entries: UsageEntry[]): Map<string, DailyUsage> {
@@ -332,4 +339,18 @@ export function getRateLimitInfo(weeklyUsage: WeeklyUsage, plan: PlanType): Rate
       },
     },
   };
+}
+
+export function calculateBatchAPISavings(entries: UsageEntry[]): number {
+  const nonBatchEntries = entries.filter(e => !e.isBatchAPI);
+  let totalSavings = 0;
+  
+  for (const entry of nonBatchEntries) {
+    const regularCost = calculateCost(entry);
+    const batchEntry = { ...entry, isBatchAPI: true };
+    const batchCost = calculateCost(batchEntry);
+    totalSavings += regularCost - batchCost;
+  }
+  
+  return totalSavings;
 }

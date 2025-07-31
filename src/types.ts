@@ -13,6 +13,7 @@ export const usageEntrySchema = z.object({
   cache_read_input_tokens: z.number().optional(),
   cost: z.number().optional(),
   costUSD: z.number().optional(),
+  isBatchAPI: z.boolean().optional(),
 });
 
 export type UsageEntry = z.infer<typeof usageEntrySchema>;
