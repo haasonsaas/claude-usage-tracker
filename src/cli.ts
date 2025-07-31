@@ -23,7 +23,11 @@ import { UsageWatcher } from "./watch-monitor.js";
 program
 	.name("claude-usage")
 	.description("Track and analyze Claude Code usage with rate limit awareness")
-	.version("1.0.0");
+	.version("1.0.0")
+	.option(
+		"-c, --config <path>",
+		"Path to configuration file (YAML format)"
+	);
 
 program
 	.command("status")

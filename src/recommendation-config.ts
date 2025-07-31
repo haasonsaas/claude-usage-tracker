@@ -1,16 +1,18 @@
-import type { MODEL_PRICING } from "./config.js";
+import { getModelRecommendations } from "./config-loader.js";
 import type { TaskClassification } from "./model-advisor.js";
 
-export const TASK_MODEL_MAPPING: Record<
+export const TASK_MODEL_MAPPING = new Proxy({} as any, {
+	get(_target, prop) {
+		const recommendations = getModelRecommendations();
+		return recommendations[prop as string];
+	},
+	ownKeys(_target) {
+		return Object.keys(getModelRecommendations());
+	},
+	has(_target, prop) {
+		return prop in getModelRecommendations();
+	},
+}) as Record<
 	TaskClassification["taskType"],
-	{ model: keyof typeof MODEL_PRICING; confidence: number }
-> = {
-	code_generation: { model: "claude-3.5-sonnet-20241022", confidence: 0.8 },
-	debugging: { model: "claude-opus-4-20250514", confidence: 0.7 },
-	code_review: { model: "claude-3.5-sonnet-20241022", confidence: 0.75 },
-	documentation: { model: "claude-3.5-sonnet-20241022", confidence: 0.9 },
-	architecture: { model: "claude-opus-4-20250514", confidence: 0.8 },
-	complex_analysis: { model: "claude-opus-4-20250514", confidence: 0.9 },
-	simple_query: { model: "claude-3.5-sonnet-20241022", confidence: 0.95 },
-	refactoring: { model: "claude-3.5-sonnet-20241022", confidence: 0.8 },
-};
+	{ model: string; confidence: number }
+>;

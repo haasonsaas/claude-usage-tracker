@@ -48,7 +48,7 @@ export interface WeeklyUsage {
 }
 
 export interface RateLimitInfo {
-	plan: "Pro" | "$100 Max" | "$200 Max";
+	plan: string;
 	weeklyLimits: {
 		sonnet4: { min: number; max: number };
 		opus4: { min: number; max: number };

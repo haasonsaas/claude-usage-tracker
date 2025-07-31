@@ -270,14 +270,14 @@ export class ModelAdvisor {
 		};
 
 		const taskReasons = reasons[taskType];
-		return taskReasons?.[model] || `${model.includes("sonnet") ? "Sonnet 4 for cost efficiency" : "Opus 4 for maximum capability"}`;
+		return taskReasons?.[String(model)] || `${String(model).includes("sonnet") ? "Sonnet 4 for cost efficiency" : "Opus 4 for maximum capability"}`;
 	}
 
 	private getAlternativeTradeoffs(
 		_taskType: TaskClassification["taskType"],
 		alternativeModel: keyof typeof MODEL_PRICING,
 	): string {
-		if (alternativeModel.includes("opus")) {
+		if (String(alternativeModel).includes("opus")) {
 			return "Higher cost but maximum reasoning capability and nuance detection";
 		} else {
 			return "78% cost savings but may miss some nuances in very complex tasks";
@@ -304,7 +304,7 @@ export class ModelAdvisor {
 		output += chalk.gray(`Reasoning: ${classification.reasoning}\n\n`);
 
 		// Recommendation
-		const modelName = recommendation.recommendedModel;
+		const modelName = String(recommendation.recommendedModel);
 		const confidenceColor =
 			recommendation.confidence > 0.8
 				? chalk.green
@@ -327,7 +327,7 @@ export class ModelAdvisor {
 
 		// Alternative
 		if (recommendation.alternativeModel) {
-			const altName = recommendation.alternativeModel.model;
+			const altName = String(recommendation.alternativeModel.model);
 			output += chalk.yellow(`⚡ Alternative: ${altName}
 `);
 			output += chalk.gray(`${recommendation.alternativeModel.tradeoffs}\n`);
