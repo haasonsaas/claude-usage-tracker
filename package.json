@@ -42,11 +42,13 @@
     "vitest": "^1.2.0"
   },
   "dependencies": {
+    "@types/js-yaml": "^4.0.9",
     "chalk": "^5.4.1",
     "cli-table3": "^0.6.5",
     "commander": "^11.1.0",
     "date-fns": "^3.6.0",
     "glob": "^11.0.3",
+    "js-yaml": "^4.1.0",
     "zod": "^3.25.76"
   }
 }
