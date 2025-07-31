@@ -990,16 +990,7 @@ export class PatternAnalyzer {
 
 
 
-	private groupByConversation(entries: UsageEntry[]): Map<string, UsageEntry[]> {
-		const conversations = new Map<string, UsageEntry[]>();
-		for (const entry of entries) {
-			if (!conversations.has(entry.conversationId)) {
-				conversations.set(entry.conversationId, []);
-			}
-			conversations.get(entry.conversationId)!.push(entry);
-		}
-		return conversations;
-	}
+
 
 	private calculateAverageComplexity(entries: UsageEntry[]): number {
 		if (entries.length === 0) return 0;

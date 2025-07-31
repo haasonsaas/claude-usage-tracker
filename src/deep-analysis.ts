@@ -194,7 +194,11 @@ export class DeepAnalyzer {
 			sum + (e.cache_creation_input_tokens || 0) + (e.cache_read_input_tokens || 0), 0);
 
 		// Find extreme entries
-		const extremeEntries = [];
+		const extremeEntries: Array<{
+			entry: UsageEntry;
+			reason: string;
+			severity: 'high' | 'medium' | 'low';
+		}> = [];
 		const highTokenThreshold = 50000;
 		const lowTokenThreshold = 10;
 		const highCostThreshold = 10;
