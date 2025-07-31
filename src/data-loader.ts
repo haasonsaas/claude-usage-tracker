@@ -3,6 +3,8 @@ import { join } from "node:path";
 import { glob } from "glob";
 import { CLAUDE_DATA_PATHS } from "./config.js";
 import type { UsageEntry } from "./types.js";
+import { usageEntrySchema } from "./types.js";
+import { streamUsageData, shouldUseStreamingLoader } from "./streaming-loader.js";
 
 interface ClaudeMessage {
 	message?: {
@@ -21,6 +23,15 @@ interface ClaudeMessage {
 }
 
 export async function loadUsageData(): Promise<UsageEntry[]> {
+	// Use streaming loader for better performance on large datasets
+	if (shouldUseStreamingLoader()) {
+		try {
+			return await streamUsageData();
+		} catch (error) {
+			console.warn("Streaming loader failed, falling back to synchronous loading:", error);
+		}
+	}
+
 	const entries: UsageEntry[] = [];
 
 	for (const basePath of CLAUDE_DATA_PATHS) {
@@ -39,6 +50,9 @@ export async function loadUsageData(): Promise<UsageEntry[]> {
 					.split("\n")
 					.filter((line) => line);
 
+				let validEntries = 0;
+				let skippedLines = 0;
+
 				for (const line of lines) {
 					try {
 						const data: ClaudeMessage = JSON.parse(line);
@@ -50,24 +64,38 @@ export async function loadUsageData(): Promise<UsageEntry[]> {
 							data.message?.model
 						) {
 							const usage = data.message.usage;
-							const entry: UsageEntry = {
+							const rawEntry = {
+								id: data.requestId || `${data.sessionId}-${Date.now()}`,
 								timestamp: data.timestamp || new Date().toISOString(),
 								conversationId: data.sessionId || "unknown",
-								instanceId: data.requestId,
 								model: data.message.model,
-								requestId: data.requestId || "unknown",
-								prompt_tokens: usage.input_tokens || 0,
-								completion_tokens: usage.output_tokens || 0,
+								input_tokens: usage.input_tokens || 0,
+								output_tokens: usage.output_tokens || 0,
 								total_tokens:
 									(usage.input_tokens || 0) + (usage.output_tokens || 0),
-								cache_creation_input_tokens: usage.cache_creation_input_tokens,
-								cache_read_input_tokens: usage.cache_read_input_tokens,
+								isBatchAPI: false, // Default assumption
 							};
-							entries.push(entry);
+
+							// Validate with Zod schema
+							const validationResult = usageEntrySchema.safeParse(rawEntry);
+							if (validationResult.success) {
+								entries.push(validationResult.data);
+								validEntries++;
+							} else {
+								console.warn(`Invalid usage entry in ${file}: ${validationResult.error.message}`);
+								skippedLines++;
+							}
 						}
-					} catch {
-						// Skip malformed lines
+					} catch (error) {
+						skippedLines++;
+						if (process.env.NODE_ENV !== "production") {
+							console.warn(`Malformed JSON line in ${file}: ${error}`);
+						}
 					}
+				}
+
+				if (process.env.NODE_ENV !== "production") {
+					console.log(`📁 ${file}: ${validEntries} valid entries, ${skippedLines} skipped`);
 				}
 			} catch (error) {
 				console.error(`Error reading file ${file}:`, error);

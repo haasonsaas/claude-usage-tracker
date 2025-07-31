@@ -20,6 +20,27 @@ import {
 import { ModelAdvisor } from "./model-advisor.js";
 import { UsageWatcher } from "./watch-monitor.js";
 
+function handleError(error: unknown, isJsonMode = false): void {
+	if (isJsonMode) {
+		console.log(JSON.stringify({
+			error: "Command failed",
+			message: error instanceof Error ? error.message : String(error),
+			timestamp: new Date().toISOString()
+		}, null, 2));
+	} else {
+		console.error(chalk.red("❌ Error:"));
+		if (error instanceof Error) {
+			console.error(chalk.gray(error.message));
+			if (error.stack && process.env.NODE_ENV !== "production") {
+				console.error(chalk.gray(error.stack));
+			}
+		} else {
+			console.error(chalk.gray(String(error)));
+		}
+	}
+	process.exit(1);
+}
+
 program
 	.name("claude-usage")
 	.description("Track and analyze Claude Code usage with rate limit awareness")
@@ -135,8 +156,7 @@ program
 				}
 			}
 		} catch (error) {
-			console.error(chalk.red("Error loading usage data:"), error);
-			process.exit(1);
+			handleError(error, options.json);
 		}
 	});
 
