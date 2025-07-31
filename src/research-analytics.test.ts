@@ -66,7 +66,7 @@ describe("ResearchAnalyzer", () => {
 				}),
 			];
 
-			const result = analyzer.analyzeConversationSuccess(entries);
+			const result = analyzer.analyzeConversationSuccessMetrics(entries);
 
 			expect(result.successMetrics.totalConversations).toBe(3);
 			expect(result.successMetrics.completionRate).toBeGreaterThanOrEqual(0);

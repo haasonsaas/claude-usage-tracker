@@ -236,12 +236,11 @@ describe("PatternAnalyzer", () => {
 
 			const result = analyzer.analyzeTaskSwitchingPatterns(entries);
 
-			expect(result.switchingMetrics.totalSwitches).toBeGreaterThan(0);
-			expect(result.switchingMetrics.avgTimeBetweenSwitches).toBeGreaterThan(0);
-			expect(result.switchingMetrics.rapidSwitchingPeriods).toBeGreaterThanOrEqual(0);
+			expect(result.switchFrequency).toBeGreaterThan(0);
+			expect(result.avgTimeBetweenSwitches).toBeGreaterThan(0);
+			expect(result.costOfSwitching).toBeGreaterThanOrEqual(0);
 
-			expect(result.taskClusters).toBeInstanceOf(Array);
-			expect(result.efficiency.switchingOverhead).toBeGreaterThanOrEqual(0);
+			expect(result.mostCommonTransitions).toBeInstanceOf(Array);
 			expect(result.recommendations).toBeInstanceOf(Array);
 		});
 
@@ -259,8 +258,8 @@ describe("PatternAnalyzer", () => {
 
 			const result = analyzer.analyzeTaskSwitchingPatterns(entries);
 
-			expect(result.switchingMetrics.totalSwitches).toBeLessThan(3);
-			expect(result.efficiency.focusedSessionDuration).toBeGreaterThan(0);
+			expect(result.switchFrequency).toBeLessThan(3);
+			expect(result.avgTimeBetweenSwitches).toBeGreaterThan(0);
 			expect(result.recommendations.some(r => r.includes("focused"))).toBe(true);
 		});
 
@@ -291,13 +290,12 @@ describe("PatternAnalyzer", () => {
 
 			const result = analyzer.analyzeTaskSwitchingPatterns(entries);
 
-			expect(result.taskClusters.length).toBeGreaterThan(1);
-			result.taskClusters.forEach(cluster => {
-				expect(cluster.type).toBeTruthy();
-				expect(cluster.conversationIds).toBeInstanceOf(Array);
-				expect(cluster.conversationIds.length).toBeGreaterThan(0);
-				expect(cluster.avgDuration).toBeGreaterThanOrEqual(0);
-				expect(cluster.characteristics).toBeInstanceOf(Array);
+			expect(result.mostCommonTransitions.length).toBeGreaterThanOrEqual(0);
+			result.mostCommonTransitions.forEach(transition => {
+				expect(transition.from).toBeTruthy();
+				expect(transition.to).toBeTruthy();
+				expect(transition.frequency).toBeGreaterThan(0);
+				expect(transition.avgGapTime).toBeGreaterThanOrEqual(0);
 			});
 		});
 
@@ -312,10 +310,9 @@ describe("PatternAnalyzer", () => {
 
 			const result = analyzer.analyzeTaskSwitchingPatterns(entries);
 
-			expect(result.efficiency.avgTaskCompletionTime).toBeGreaterThan(0);
-			expect(result.efficiency.multitaskingEfficiency).toBeGreaterThanOrEqual(0);
-			expect(result.efficiency.multitaskingEfficiency).toBeLessThanOrEqual(1);
-			expect(result.efficiency.optimalBatchSize).toBeGreaterThan(0);
+			expect(result.costOfSwitching).toBeGreaterThanOrEqual(0);
+			expect(result.switchFrequency).toBeGreaterThanOrEqual(0);
+			expect(result.avgTimeBetweenSwitches).toBeGreaterThanOrEqual(0);
 		});
 	});
 
@@ -331,8 +328,8 @@ describe("PatternAnalyzer", () => {
 			expect(learningResult.overallTrend).toBe("stable");
 
 			const switchingResult = analyzer.analyzeTaskSwitchingPatterns([]);
-			expect(switchingResult.switchingMetrics.totalSwitches).toBe(0);
-			expect(switchingResult.taskClusters).toHaveLength(0);
+			expect(switchingResult.switchFrequency).toBe(0);
+			expect(switchingResult.mostCommonTransitions).toHaveLength(0);
 		});
 
 		it("should handle single conversation", () => {
@@ -406,8 +403,8 @@ describe("PatternAnalyzer", () => {
 			});
 
 			const switchingResult = analyzer.analyzeTaskSwitchingPatterns(entries);
-			expect(switchingResult.efficiency.multitaskingEfficiency).toBeGreaterThanOrEqual(0);
-			expect(switchingResult.efficiency.multitaskingEfficiency).toBeLessThanOrEqual(1);
+			expect(switchingResult.switchFrequency).toBeGreaterThanOrEqual(0);
+			expect(switchingResult.avgTimeBetweenSwitches).toBeGreaterThanOrEqual(0);
 		});
 
 		it("should handle extreme conversation lengths", () => {

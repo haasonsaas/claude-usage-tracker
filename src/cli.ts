@@ -497,7 +497,7 @@ program
 				console.log(JSON.stringify({
 					summary,
 					clusters: clusters.slice(0, 5),
-					batchOpportunities: batchOpportunities.slice(0, 5)
+					batchOpportunities: batchOpportunities.opportunities.slice(0, 5)
 				}, null, 2));
 			} else {
 				console.log(formatHeader("⚡ Optimization Analytics"));

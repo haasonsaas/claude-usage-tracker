@@ -105,7 +105,7 @@ export class OptimizationAnalyzer {
 
 	identifyBatchProcessingOpportunities(
 		entries: UsageEntry[],
-	): BatchProcessingOpportunity[] {
+	): { opportunities: BatchProcessingOpportunity[]; totalPotentialSavings: number } {
 		const conversations = this.groupByConversation(entries);
 		const opportunities: BatchProcessingOpportunity[] = [];
 
@@ -139,12 +139,16 @@ export class OptimizationAnalyzer {
 			}
 		}
 
-		return opportunities.sort((a, b) => b.savings - a.savings);
+		const sortedOpportunities = opportunities.sort((a, b) => b.savings - a.savings);
+		return {
+			opportunities: sortedOpportunities,
+			totalPotentialSavings: sortedOpportunities.reduce((sum, opp) => sum + opp.savings, 0)
+		};
 	}
 
 	generateModelSwitchingRecommendations(
 		entries: UsageEntry[],
-	): ModelSwitchingRecommendation[] {
+	): { recommendations: ModelSwitchingRecommendation[]; totalPotentialSavings: number } {
 		const conversations = this.groupByConversation(entries);
 		const recommendations: ModelSwitchingRecommendation[] = [];
 
@@ -169,9 +173,15 @@ export class OptimizationAnalyzer {
 			}
 		}
 
-		return recommendations.sort(
+		const sortedRecommendations = recommendations.sort(
 			(a, b) => Math.abs(b.savings) - Math.abs(a.savings),
 		);
+		return {
+			recommendations: sortedRecommendations,
+			totalPotentialSavings: sortedRecommendations
+				.filter(r => r.savings > 0)
+				.reduce((sum, r) => sum + r.savings, 0)
+		};
 	}
 
 	generateOptimizationSummary(entries: UsageEntry[]): OptimizationSummary {
@@ -181,26 +191,21 @@ export class OptimizationAnalyzer {
 			this.generateModelSwitchingRecommendations(entries);
 		const clusters = this.clusterConversations(entries);
 
-		const batchProcessingSavings = batchOpportunities.reduce(
-			(sum, opp) => sum + opp.savings,
-			0,
-		);
-		const modelSwitchingSavings = modelRecommendations
-			.filter((rec) => rec.savings > 0)
-			.reduce((sum, rec) => sum + rec.savings, 0);
+		const batchProcessingSavings = batchOpportunities.totalPotentialSavings;
+		const modelSwitchingSavings = modelRecommendations.totalPotentialSavings;
 		const efficiencyImprovements = clusters.reduce(
 			(sum, cluster) => sum + cluster.optimizationPotential,
 			0,
 		);
 
 		const recommendations = [
-			...batchOpportunities.slice(0, 3).map((opp) => ({
+			...batchOpportunities.opportunities.slice(0, 3).map((opp) => ({
 				type: "batch" as const,
 				description: `Use Batch API for conversation ${opp.conversationId.slice(-8)}`,
 				savings: opp.savings,
 				effort: "low" as const,
 			})),
-			...modelRecommendations
+			...modelRecommendations.recommendations
 				.slice(0, 3)
 				.filter((rec) => rec.savings > 0)
 				.map((rec) => ({
