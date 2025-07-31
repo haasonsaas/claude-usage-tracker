@@ -83,7 +83,7 @@ export class OptimizationAnalyzer {
 
 			const cluster = clusters.get(clusterType);
 			if (!cluster) continue;
-		cluster.conversations.push({
+			cluster.conversations.push({
 				conversationId,
 				cost,
 				tokens,
@@ -103,9 +103,10 @@ export class OptimizationAnalyzer {
 		);
 	}
 
-	identifyBatchProcessingOpportunities(
-		entries: UsageEntry[],
-	): { opportunities: BatchProcessingOpportunity[]; totalPotentialSavings: number } {
+	identifyBatchProcessingOpportunities(entries: UsageEntry[]): {
+		opportunities: BatchProcessingOpportunity[];
+		totalPotentialSavings: number;
+	} {
 		const conversations = this.groupByConversation(entries);
 		const opportunities: BatchProcessingOpportunity[] = [];
 
@@ -139,16 +140,22 @@ export class OptimizationAnalyzer {
 			}
 		}
 
-		const sortedOpportunities = opportunities.sort((a, b) => b.savings - a.savings);
+		const sortedOpportunities = opportunities.sort(
+			(a, b) => b.savings - a.savings,
+		);
 		return {
 			opportunities: sortedOpportunities,
-			totalPotentialSavings: sortedOpportunities.reduce((sum, opp) => sum + opp.savings, 0)
+			totalPotentialSavings: sortedOpportunities.reduce(
+				(sum, opp) => sum + opp.savings,
+				0,
+			),
 		};
 	}
 
-	generateModelSwitchingRecommendations(
-		entries: UsageEntry[],
-	): { recommendations: ModelSwitchingRecommendation[]; totalPotentialSavings: number } {
+	generateModelSwitchingRecommendations(entries: UsageEntry[]): {
+		recommendations: ModelSwitchingRecommendation[];
+		totalPotentialSavings: number;
+	} {
 		const conversations = this.groupByConversation(entries);
 		const recommendations: ModelSwitchingRecommendation[] = [];
 
@@ -179,8 +186,8 @@ export class OptimizationAnalyzer {
 		return {
 			recommendations: sortedRecommendations,
 			totalPotentialSavings: sortedRecommendations
-				.filter(r => r.savings > 0)
-				.reduce((sum, r) => sum + r.savings, 0)
+				.filter((r) => r.savings > 0)
+				.reduce((sum, r) => sum + r.savings, 0),
 		};
 	}
 
@@ -340,7 +347,8 @@ export class OptimizationAnalyzer {
 		let score = 0.4; // Base eligibility score
 
 		// Check for complexity - high token usage reduces batch eligibility
-		const avgTokens = entries.reduce((sum, e) => sum + e.total_tokens, 0) / entries.length;
+		const avgTokens =
+			entries.reduce((sum, e) => sum + e.total_tokens, 0) / entries.length;
 		if (avgTokens > 8000) score -= 0.5; // High complexity conversations less suitable for batching
 		if (avgTokens > 15000) score -= 0.3; // Very high complexity
 
@@ -498,102 +506,116 @@ export class OptimizationAnalyzer {
 				recommendation: string;
 			};
 		}> = [];
-		
+
 		// Group conversations by similarity (token count, cost, model)
 		const clusterMap = new Map<string, string[]>();
-		
+
 		for (const [conversationId, convEntries] of conversations) {
-			const avgTokens = convEntries.reduce((sum, e) => sum + e.total_tokens, 0) / convEntries.length;
-			const totalCost = convEntries.reduce((sum, e) => sum + calculateCost(e), 0);
+			const avgTokens =
+				convEntries.reduce((sum, e) => sum + e.total_tokens, 0) /
+				convEntries.length;
+			const totalCost = convEntries.reduce(
+				(sum, e) => sum + calculateCost(e),
+				0,
+			);
 			const model = convEntries[0].model;
-			
+
 			// Create cluster key based on model and complexity
 			const complexity = this.calculateComplexityScore(convEntries);
 			const clusterKey = `${model}-${Math.floor(complexity * 4)}`; // 4 complexity buckets
-			
+
 			if (!clusterMap.has(clusterKey)) {
 				clusterMap.set(clusterKey, []);
 			}
 			clusterMap.get(clusterKey)!.push(conversationId);
 		}
-		
+
 		// Convert to cluster analysis format
 		for (const [clusterKey, conversationIds] of clusterMap) {
 			// Include all clusters, even single conversations for analysis
-			
-			const clusterEntries = conversationIds.flatMap(id => 
-				conversations.get(id) || []
+
+			const clusterEntries = conversationIds.flatMap(
+				(id) => conversations.get(id) || [],
 			);
-			
-			const avgTokens = clusterEntries.reduce((sum, e) => sum + e.total_tokens, 0) / clusterEntries.length;
-			const totalCost = clusterEntries.reduce((sum, e) => sum + calculateCost(e), 0);
+
+			const avgTokens =
+				clusterEntries.reduce((sum, e) => sum + e.total_tokens, 0) /
+				clusterEntries.length;
+			const totalCost = clusterEntries.reduce(
+				(sum, e) => sum + calculateCost(e),
+				0,
+			);
 			const avgCost = totalCost / conversationIds.length;
 			const complexity = this.calculateComplexityScore(clusterEntries);
-			
+
 			// Calculate optimization potential
-			const isOpus = clusterKey.includes('opus');
-			const potentialSavings = isOpus && complexity < 0.5 ? totalCost * 0.78 : 0;
-			
+			const isOpus = clusterKey.includes("opus");
+			const potentialSavings =
+				isOpus && complexity < 0.5 ? totalCost * 0.78 : 0;
+
 			clusters.push({
 				conversationIds,
 				characteristics: {
 					avgTokens,
 					avgCost,
-					complexity
+					complexity,
 				},
 				optimization: {
 					potentialSavings,
-					recommendation: potentialSavings > 0 
-						? 'Switch to Sonnet for cost savings'
-						: 'Current model appropriate for complexity'
-				}
+					recommendation:
+						potentialSavings > 0
+							? "Switch to Sonnet for cost savings"
+							: "Current model appropriate for complexity",
+				},
 			});
 		}
-		
+
 		return {
 			clusters,
 			totalConversations: conversations.size,
-			avgClusterSize: clusters.length > 0 ? clusters.reduce((sum, c) => sum + c.conversationIds.length, 0) / clusters.length : 0
+			avgClusterSize:
+				clusters.length > 0
+					? clusters.reduce((sum, c) => sum + c.conversationIds.length, 0) /
+						clusters.length
+					: 0,
 		};
 	}
 
-
-
-
-
-
-
-
-	private removeBatchOverlaps(opportunities: Array<{ conversationIds: string[] }>) {
+	private removeBatchOverlaps(
+		opportunities: Array<{ conversationIds: string[] }>,
+	) {
 		const used = new Set<string>();
 		const filtered = [];
-		
+
 		// Sort by group size (descending) to prefer larger batches
-		const sorted = [...opportunities].sort((a, b) => b.conversationIds.length - a.conversationIds.length);
-		
+		const sorted = [...opportunities].sort(
+			(a, b) => b.conversationIds.length - a.conversationIds.length,
+		);
+
 		for (const opportunity of sorted) {
-			const hasOverlap = opportunity.conversationIds.some(id => used.has(id));
+			const hasOverlap = opportunity.conversationIds.some((id) => used.has(id));
 			if (!hasOverlap) {
-				opportunity.conversationIds.forEach(id => used.add(id));
+				opportunity.conversationIds.forEach((id) => used.add(id));
 				filtered.push(opportunity);
 			}
 		}
-		
+
 		return filtered;
 	}
 
 	private calculateComplexityScore(entries: UsageEntry[]): number {
 		if (entries.length === 0) return 0;
-		
+
 		const conversationLength = entries.length;
-		const avgTokensPerMessage = entries.reduce((sum, e) => sum + e.total_tokens, 0) / entries.length;
+		const avgTokensPerMessage =
+			entries.reduce((sum, e) => sum + e.total_tokens, 0) / entries.length;
 		const totalCost = entries.reduce((sum, e) => sum + calculateCost(e), 0);
-		
+
 		let score = 0;
 		if (conversationLength > 10) score += 0.3;
 		if (avgTokensPerMessage > 5000) score += 0.4;
 		if (totalCost > 1.0) score += 0.3;
-		
+
 		return Math.min(1.0, score);
 	}
 }

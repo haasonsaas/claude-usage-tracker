@@ -82,7 +82,9 @@ export interface AdvancedInsights {
 }
 
 export class ResearchAnalyzer {
-	analyzeConversationSuccess(entries: UsageEntry[]): ConversationSuccessMetrics[] {
+	analyzeConversationSuccess(
+		entries: UsageEntry[],
+	): ConversationSuccessMetrics[] {
 		const conversations = this.groupByConversation(entries);
 		const metrics: ConversationSuccessMetrics[] = [];
 
@@ -90,23 +92,36 @@ export class ResearchAnalyzer {
 			// Process all conversations, including single-message ones
 
 			const sortedEntries = [...convEntries].sort(
-				(a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+				(a, b) =>
+					new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
 			);
 
 			const messageCount = convEntries.length;
-			const totalCost = convEntries.reduce((sum, e) => sum + calculateCost(e), 0);
-			const totalTokens = convEntries.reduce((sum, e) => sum + e.total_tokens, 0);
-			
+			const totalCost = convEntries.reduce(
+				(sum, e) => sum + calculateCost(e),
+				0,
+			);
+			const totalTokens = convEntries.reduce(
+				(sum, e) => sum + e.total_tokens,
+				0,
+			);
+
 			const startTime = new Date(sortedEntries[0].timestamp);
-			const endTime = new Date(sortedEntries[sortedEntries.length - 1].timestamp);
+			const endTime = new Date(
+				sortedEntries[sortedEntries.length - 1].timestamp,
+			);
 			const duration = (endTime.getTime() - startTime.getTime()) / (1000 * 60);
 
 			const efficiency = totalTokens / Math.max(totalCost, 0.001);
-			const successScore = this.calculateSuccessScore(convEntries, duration, efficiency);
+			const successScore = this.calculateSuccessScore(
+				convEntries,
+				duration,
+				efficiency,
+			);
 			const promptComplexity = this.calculatePromptComplexity(convEntries);
 			const cacheUtilization = this.calculateCacheUtilization(convEntries);
 			const modelSwitches = this.countModelSwitches(convEntries);
-			
+
 			const timeOfDay = startTime.getHours();
 			const dayOfWeek = startTime.getDay();
 			const avgResponseTime = this.calculateAvgResponseTime(sortedEntries);
@@ -124,7 +139,7 @@ export class ResearchAnalyzer {
 				modelSwitches,
 				timeOfDay,
 				dayOfWeek,
-				avgResponseTime
+				avgResponseTime,
 			});
 		}
 
@@ -148,13 +163,21 @@ export class ResearchAnalyzer {
 		for (const [projectPath, projectEntries] of projectMap) {
 			if (projectEntries.length < 5) continue; // Filter out small projects
 
-			const totalCost = projectEntries.reduce((sum, e) => sum + calculateCost(e), 0);
-			const totalTokens = projectEntries.reduce((sum, e) => sum + e.total_tokens, 0);
-			const conversations = new Set(projectEntries.map(e => e.conversationId));
+			const totalCost = projectEntries.reduce(
+				(sum, e) => sum + calculateCost(e),
+				0,
+			);
+			const totalTokens = projectEntries.reduce(
+				(sum, e) => sum + e.total_tokens,
+				0,
+			);
+			const conversations = new Set(
+				projectEntries.map((e) => e.conversationId),
+			);
 			const conversationCount = conversations.size;
 			const avgCostPerConversation = totalCost / conversationCount;
 			const efficiency = totalTokens / Math.max(totalCost, 0.001);
-			
+
 			const timeSpent = this.calculateProjectTimeSpent(projectEntries);
 			const roi = this.calculateROI(efficiency, totalCost, timeSpent);
 			const primaryModel = this.getPrimaryModel(projectEntries);
@@ -170,7 +193,7 @@ export class ResearchAnalyzer {
 				timeSpent,
 				roi,
 				primaryModel,
-				topics
+				topics,
 			});
 		}
 
@@ -178,14 +201,17 @@ export class ResearchAnalyzer {
 	}
 
 	generateTimeSeriesData(entries: UsageEntry[]): TimeSeriesDataPoint[] {
-		const dailyMap = new Map<string, {
-			entries: UsageEntry[];
-			conversations: Set<string>;
-		}>();
+		const dailyMap = new Map<
+			string,
+			{
+				entries: UsageEntry[];
+				conversations: Set<string>;
+			}
+		>();
 
 		// Group by date
 		for (const entry of entries) {
-			const date = new Date(entry.timestamp).toISOString().split('T')[0];
+			const date = new Date(entry.timestamp).toISOString().split("T")[0];
 			if (!dailyMap.has(date)) {
 				dailyMap.set(date, { entries: [], conversations: new Set() });
 			}
@@ -198,15 +224,21 @@ export class ResearchAnalyzer {
 
 		for (const [date, dayData] of dailyMap) {
 			const { entries: dayEntries } = dayData;
-			
-			const dailyCost = dayEntries.reduce((sum, e) => sum + calculateCost(e), 0);
-			const dailyTokens = dayEntries.reduce((sum, e) => sum + e.total_tokens, 0);
+
+			const dailyCost = dayEntries.reduce(
+				(sum, e) => sum + calculateCost(e),
+				0,
+			);
+			const dailyTokens = dayEntries.reduce(
+				(sum, e) => sum + e.total_tokens,
+				0,
+			);
 			const conversationCount = dayData.conversations.size;
 			const avgEfficiency = dailyTokens / Math.max(dailyCost, 0.001);
-			
-			const opusEntries = dayEntries.filter(e => e.model.includes("opus"));
+
+			const opusEntries = dayEntries.filter((e) => e.model.includes("opus"));
 			const opusPercentage = opusEntries.length / dayEntries.length;
-			
+
 			const cacheHitRate = this.calculateDailyCacheHitRate(dayEntries);
 
 			timeSeriesData.push({
@@ -216,7 +248,7 @@ export class ResearchAnalyzer {
 				conversationCount,
 				avgEfficiency,
 				opusPercentage,
-				cacheHitRate
+				cacheHitRate,
 			});
 		}
 
@@ -225,11 +257,16 @@ export class ResearchAnalyzer {
 
 	analyzeCacheOptimization(entries: UsageEntry[]): CacheOptimizationInsight {
 		const totalTokens = entries.reduce((sum, e) => sum + e.total_tokens, 0);
-		const totalCacheTokens = entries.reduce((sum, e) => 
-			sum + (e.cache_creation_input_tokens || 0) + (e.cache_read_input_tokens || 0), 0);
-		
+		const totalCacheTokens = entries.reduce(
+			(sum, e) =>
+				sum +
+				(e.cache_creation_input_tokens || 0) +
+				(e.cache_read_input_tokens || 0),
+			0,
+		);
+
 		const cacheHitRate = totalCacheTokens / Math.max(totalTokens, 1);
-		
+
 		// Calculate cache savings (estimate based on cache vs non-cache pricing)
 		const cacheSavings = entries.reduce((sum, e) => {
 			const cacheReadTokens = e.cache_read_input_tokens || 0;
@@ -244,47 +281,61 @@ export class ResearchAnalyzer {
 
 		for (const [conversationId, convEntries] of conversations) {
 			const convCacheRate = this.calculateCacheUtilization(convEntries);
-			if (convEntries.length > 10 && convCacheRate < 0.3) { // Long conversations with low cache usage
-				const missedOpportunity = this.calculateMissedCachingOpportunity(convEntries);
+			if (convEntries.length > 10 && convCacheRate < 0.3) {
+				// Long conversations with low cache usage
+				const missedOpportunity =
+					this.calculateMissedCachingOpportunity(convEntries);
 				underutilizedConversations.push({
 					conversationId,
-					missedCachingOpportunity: missedOpportunity
+					missedCachingOpportunity: missedOpportunity,
 				});
 			}
 		}
 
-		const recommendations = this.generateCacheRecommendations(cacheHitRate, underutilizedConversations);
+		const recommendations = this.generateCacheRecommendations(
+			cacheHitRate,
+			underutilizedConversations,
+		);
 
 		return {
 			totalCacheTokens,
 			cacheHitRate,
 			cacheSavings,
 			underutilizedConversations: underutilizedConversations.slice(0, 10),
-			recommendations
+			recommendations,
 		};
 	}
 
 	analyzePromptingPatterns(entries: UsageEntry[]): PromptingPatternAnalysis {
 		const conversations = this.groupByConversation(entries);
-		const promptPatterns = new Map<string, {
-			successes: number;
-			failures: number;
-			totalCost: number;
-			totalEfficiency: number;
-			examples: string[];
-		}>();
+		const promptPatterns = new Map<
+			string,
+			{
+				successes: number;
+				failures: number;
+				totalCost: number;
+				totalEfficiency: number;
+				examples: string[];
+			}
+		>();
 
 		// Note: This is a simplified analysis since we don't have actual prompt content
 		// In a real scenario, you'd analyze the prompt text for patterns
-		
+
 		let totalPromptLength = 0;
 		let promptCount = 0;
 
 		for (const [_, convEntries] of conversations) {
-			const avgTokensPerMessage = convEntries.reduce((sum, e) => sum + e.prompt_tokens, 0) / convEntries.length;
-			const efficiency = convEntries.reduce((sum, e) => sum + e.total_tokens, 0) / 
-				Math.max(convEntries.reduce((sum, e) => sum + calculateCost(e), 0), 0.001);
-			
+			const avgTokensPerMessage =
+				convEntries.reduce((sum, e) => sum + e.prompt_tokens, 0) /
+				convEntries.length;
+			const efficiency =
+				convEntries.reduce((sum, e) => sum + e.total_tokens, 0) /
+				Math.max(
+					convEntries.reduce((sum, e) => sum + calculateCost(e), 0),
+					0.001,
+				);
+
 			// Categorize by prompt length and context
 			let pattern = "short";
 			if (avgTokensPerMessage > 1000) pattern = "medium";
@@ -297,22 +348,25 @@ export class ResearchAnalyzer {
 					failures: 0,
 					totalCost: 0,
 					totalEfficiency: 0,
-					examples: []
+					examples: [],
 				});
 			}
 
 			const patternData = promptPatterns.get(pattern)!;
 			const isSuccess = efficiency > 3000; // Arbitrary threshold
-			
+
 			if (isSuccess) {
 				patternData.successes++;
 			} else {
 				patternData.failures++;
 			}
-			
-			patternData.totalCost += convEntries.reduce((sum, e) => sum + calculateCost(e), 0);
+
+			patternData.totalCost += convEntries.reduce(
+				(sum, e) => sum + calculateCost(e),
+				0,
+			);
 			patternData.totalEfficiency += efficiency;
-			
+
 			totalPromptLength += avgTokensPerMessage;
 			promptCount++;
 		}
@@ -325,7 +379,7 @@ export class ResearchAnalyzer {
 				pattern,
 				successRate: data.successes / (data.successes + data.failures),
 				efficiency: data.totalEfficiency / (data.successes + data.failures),
-				examples: data.examples.slice(0, 3)
+				examples: data.examples.slice(0, 3),
 			}))
 			.sort((a, b) => b.successRate - a.successRate);
 
@@ -334,17 +388,20 @@ export class ResearchAnalyzer {
 			.map(([pattern, data]) => ({
 				pattern,
 				wasteRate: data.failures / (data.successes + data.failures),
-				avgCost: data.totalCost / (data.successes + data.failures)
+				avgCost: data.totalCost / (data.successes + data.failures),
 			}))
 			.sort((a, b) => b.wasteRate - a.wasteRate);
 
-		const optimalPromptingGuidelines = this.generatePromptingGuidelines(effectivePromptPatterns, inefficientPatterns);
+		const optimalPromptingGuidelines = this.generatePromptingGuidelines(
+			effectivePromptPatterns,
+			inefficientPatterns,
+		);
 
 		return {
 			avgPromptLength,
 			effectivePromptPatterns,
 			inefficientPatterns,
-			optimalPromptingGuidelines
+			optimalPromptingGuidelines,
 		};
 	}
 
@@ -354,7 +411,8 @@ export class ResearchAnalyzer {
 		const timeSeriesData = this.generateTimeSeriesData(entries);
 		const cacheOptimization = this.analyzeCacheOptimization(entries);
 		const promptingPatterns = this.analyzePromptingPatterns(entries);
-		const correlationInsights = this.calculateCorrelationInsights(conversationSuccess);
+		const correlationInsights =
+			this.calculateCorrelationInsights(conversationSuccess);
 
 		return {
 			conversationSuccess,
@@ -362,12 +420,14 @@ export class ResearchAnalyzer {
 			timeSeriesData,
 			cacheOptimization,
 			promptingPatterns,
-			correlationInsights
+			correlationInsights,
 		};
 	}
 
 	// Private helper methods
-	private groupByConversation(entries: UsageEntry[]): Map<string, UsageEntry[]> {
+	private groupByConversation(
+		entries: UsageEntry[],
+	): Map<string, UsageEntry[]> {
 		const conversations = new Map<string, UsageEntry[]>();
 		for (const entry of entries) {
 			if (!conversations.has(entry.conversationId)) {
@@ -378,19 +438,30 @@ export class ResearchAnalyzer {
 		return conversations;
 	}
 
-	private calculateSuccessScore(entries: UsageEntry[], duration: number, efficiency: number): number {
+	private calculateSuccessScore(
+		entries: UsageEntry[],
+		duration: number,
+		efficiency: number,
+	): number {
 		// Multi-factor success score focused on completion-to-prompt ratio and efficiency
 		let score = 0;
-		
+
 		// Calculate completion-to-prompt ratio (70% weight)
-		const totalPromptTokens = entries.reduce((sum, e) => sum + e.prompt_tokens, 0);
-		const totalCompletionTokens = entries.reduce((sum, e) => sum + e.completion_tokens, 0);
-		const completionRatio = totalCompletionTokens / Math.max(totalPromptTokens, 1);
-		
+		const totalPromptTokens = entries.reduce(
+			(sum, e) => sum + e.prompt_tokens,
+			0,
+		);
+		const totalCompletionTokens = entries.reduce(
+			(sum, e) => sum + e.completion_tokens,
+			0,
+		);
+		const completionRatio =
+			totalCompletionTokens / Math.max(totalPromptTokens, 1);
+
 		// High completion ratio indicates good conversation efficiency
 		const ratioScore = Math.min(completionRatio / 2, 1) * 0.7; // Peak at 2:1 ratio
 		score += ratioScore;
-		
+
 		// Message count component (20%) - prefer reasonable conversation lengths
 		const messageCount = entries.length;
 		let messageScore = 0;
@@ -403,38 +474,44 @@ export class ResearchAnalyzer {
 			messageScore = 0.1; // Single message gets partial credit
 		}
 		score += messageScore;
-		
+
 		// Duration bonus (10%) - only if duration > 0
 		if (duration > 0) {
 			const durationScore = Math.min(duration / 60, 1) * 0.1; // Up to 1 hour gets full points
 			score += durationScore;
 		}
-		
+
 		// Base engagement bonus for multi-message conversations
 		if (messageCount > 5) {
 			score += 0.2; // Ensure long conversations are at least "struggling" level
 		}
-		
+
 		return Math.min(1, score);
 	}
 
 	private calculatePromptComplexity(entries: UsageEntry[]): number {
-		const avgPromptTokens = entries.reduce((sum, e) => sum + e.prompt_tokens, 0) / entries.length;
+		const avgPromptTokens =
+			entries.reduce((sum, e) => sum + e.prompt_tokens, 0) / entries.length;
 		// Normalize to 0-1 scale
 		return Math.min(avgPromptTokens / 10000, 1);
 	}
 
 	private calculateCacheUtilization(entries: UsageEntry[]): number {
 		const totalTokens = entries.reduce((sum, e) => sum + e.total_tokens, 0);
-		const cacheTokens = entries.reduce((sum, e) => 
-			sum + (e.cache_creation_input_tokens || 0) + (e.cache_read_input_tokens || 0), 0);
+		const cacheTokens = entries.reduce(
+			(sum, e) =>
+				sum +
+				(e.cache_creation_input_tokens || 0) +
+				(e.cache_read_input_tokens || 0),
+			0,
+		);
 		return cacheTokens / Math.max(totalTokens, 1);
 	}
 
 	private countModelSwitches(entries: UsageEntry[]): number {
 		let switches = 0;
 		for (let i = 1; i < entries.length; i++) {
-			if (entries[i].model !== entries[i-1].model) {
+			if (entries[i].model !== entries[i - 1].model) {
 				switches++;
 			}
 		}
@@ -443,45 +520,53 @@ export class ResearchAnalyzer {
 
 	private calculateAvgResponseTime(sortedEntries: UsageEntry[]): number {
 		if (sortedEntries.length < 2) return 0;
-		
+
 		let totalTime = 0;
 		for (let i = 1; i < sortedEntries.length; i++) {
-			const prevTime = new Date(sortedEntries[i-1].timestamp).getTime();
+			const prevTime = new Date(sortedEntries[i - 1].timestamp).getTime();
 			const currTime = new Date(sortedEntries[i].timestamp).getTime();
 			totalTime += (currTime - prevTime) / 1000; // Convert to seconds
 		}
-		
+
 		return totalTime / (sortedEntries.length - 1);
 	}
 
 	private extractProjectPath(conversationId: string): string {
 		// Extract project path from conversation directory structure
 		// Example: "/Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/..."
-		const parts = conversationId.split('/');
-		const projectIndex = parts.findIndex(part => part.includes('-Users-jonathanhaas-'));
+		const parts = conversationId.split("/");
+		const projectIndex = parts.findIndex((part) =>
+			part.includes("-Users-jonathanhaas-"),
+		);
 		if (projectIndex !== -1 && projectIndex < parts.length - 1) {
-			return parts[projectIndex].replace('-Users-jonathanhaas-', '');
+			return parts[projectIndex].replace("-Users-jonathanhaas-", "");
 		}
-		return 'unknown';
+		return "unknown";
 	}
 
 	private calculateProjectTimeSpent(entries: UsageEntry[]): number {
 		const conversations = this.groupByConversation(entries);
 		let totalTime = 0;
-		
+
 		for (const convEntries of conversations.values()) {
 			if (convEntries.length < 2) continue;
-			const sorted = [...convEntries].sort((a, b) => 
-				new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+			const sorted = [...convEntries].sort(
+				(a, b) =>
+					new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+			);
 			const start = new Date(sorted[0].timestamp);
 			const end = new Date(sorted[sorted.length - 1].timestamp);
 			totalTime += (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
 		}
-		
+
 		return totalTime;
 	}
 
-	private calculateROI(efficiency: number, totalCost: number, timeSpent: number): number {
+	private calculateROI(
+		efficiency: number,
+		totalCost: number,
+		timeSpent: number,
+	): number {
 		// ROI = (efficiency * output volume) / (cost + time opportunity cost)
 		const opportunityCost = timeSpent * 50; // Assume $50/hour opportunity cost
 		const totalInvestment = totalCost + opportunityCost;
@@ -493,7 +578,7 @@ export class ResearchAnalyzer {
 		for (const entry of entries) {
 			modelCounts.set(entry.model, (modelCounts.get(entry.model) || 0) + 1);
 		}
-		
+
 		let primaryModel = "unknown";
 		let maxCount = 0;
 		for (const [model, count] of modelCounts) {
@@ -502,27 +587,34 @@ export class ResearchAnalyzer {
 				primaryModel = model;
 			}
 		}
-		
+
 		return primaryModel;
 	}
 
 	private inferTopics(projectPath: string): string[] {
 		const topics: string[] = [];
 		const path = projectPath.toLowerCase();
-		
-		if (path.includes('homelab')) topics.push('infrastructure');
-		if (path.includes('blog')) topics.push('content');
-		if (path.includes('evalops') || path.includes('platform')) topics.push('development');
-		if (path.includes('bloom')) topics.push('mobile');
-		if (path.includes('dotfiles')) topics.push('configuration');
-		if (path.includes('proxmox')) topics.push('virtualization');
-		
-		return topics.length > 0 ? topics : ['general'];
+
+		if (path.includes("homelab")) topics.push("infrastructure");
+		if (path.includes("blog")) topics.push("content");
+		if (path.includes("evalops") || path.includes("platform"))
+			topics.push("development");
+		if (path.includes("bloom")) topics.push("mobile");
+		if (path.includes("dotfiles")) topics.push("configuration");
+		if (path.includes("proxmox")) topics.push("virtualization");
+
+		return topics.length > 0 ? topics : ["general"];
 	}
 
 	private calculateDailyCacheHitRate(entries: UsageEntry[]): number {
-		const totalPromptTokens = entries.reduce((sum, e) => sum + e.prompt_tokens, 0);
-		const cacheReadTokens = entries.reduce((sum, e) => sum + (e.cache_read_input_tokens || 0), 0);
+		const totalPromptTokens = entries.reduce(
+			(sum, e) => sum + e.prompt_tokens,
+			0,
+		);
+		const cacheReadTokens = entries.reduce(
+			(sum, e) => sum + (e.cache_read_input_tokens || 0),
+			0,
+		);
 		return cacheReadTokens / Math.max(totalPromptTokens, 1);
 	}
 
@@ -530,44 +622,63 @@ export class ResearchAnalyzer {
 		const totalCost = entries.reduce((sum, e) => sum + calculateCost(e), 0);
 		const currentCacheUtilization = this.calculateCacheUtilization(entries);
 		const potentialCacheUtilization = 0.8; // Assume 80% could be cached
-		
+
 		// Estimate savings if better caching was used
-		const potentialSavings = totalCost * (potentialCacheUtilization - currentCacheUtilization) * 0.75;
+		const potentialSavings =
+			totalCost * (potentialCacheUtilization - currentCacheUtilization) * 0.75;
 		return Math.max(0, potentialSavings);
 	}
 
-	private generateCacheRecommendations(cacheHitRate: number, underutilized: any[]): string[] {
+	private generateCacheRecommendations(
+		cacheHitRate: number,
+		underutilized: any[],
+	): string[] {
 		const recommendations: string[] = [];
-		
+
 		if (cacheHitRate < 0.3) {
-			recommendations.push("Consider enabling context caching for longer conversations");
+			recommendations.push(
+				"Consider enabling context caching for longer conversations",
+			);
 		}
-		
+
 		if (underutilized.length > 5) {
-			recommendations.push(`${underutilized.length} conversations have missed caching opportunities`);
+			recommendations.push(
+				`${underutilized.length} conversations have missed caching opportunities`,
+			);
 		}
-		
-		recommendations.push("Use conversation continuation instead of starting fresh for related tasks");
-		
+
+		recommendations.push(
+			"Use conversation continuation instead of starting fresh for related tasks",
+		);
+
 		return recommendations;
 	}
 
-	private generatePromptingGuidelines(effective: any[], _inefficient: any[]): string[] {
+	private generatePromptingGuidelines(
+		effective: any[],
+		_inefficient: any[],
+	): string[] {
 		const guidelines: string[] = [];
-		
+
 		const bestPattern = effective[0];
 		if (bestPattern) {
-			guidelines.push(`Optimal prompt length appears to be ${bestPattern.pattern} prompts`);
+			guidelines.push(
+				`Optimal prompt length appears to be ${bestPattern.pattern} prompts`,
+			);
 		}
-		
+
 		guidelines.push("Break complex tasks into smaller, focused prompts");
 		guidelines.push("Use context caching for repeated information");
-		guidelines.push("Provide clear, specific instructions to reduce back-and-forth");
-		
+		guidelines.push(
+			"Provide clear, specific instructions to reduce back-and-forth",
+		);
+
 		return guidelines;
 	}
 
-	private calculateCorrelationInsights(metrics: ConversationSuccessMetrics[] | any): Array<{
+	private calculateCorrelationInsights(
+		metrics: ConversationSuccessMetrics[] | any,
+	): Array<{
 		factor1: string;
 		factor2: string;
 		correlation: number;
@@ -575,93 +686,105 @@ export class ResearchAnalyzer {
 	}> {
 		// Handle both ConversationSuccessMetrics[] and other formats
 		if (!Array.isArray(metrics)) {
-			return [{
-				factor1: "data",
-				factor2: "format",
-				correlation: 0,
-				insight: "Insufficient data format for correlation analysis"
-			}];
+			return [
+				{
+					factor1: "data",
+					factor2: "format",
+					correlation: 0,
+					insight: "Insufficient data format for correlation analysis",
+				},
+			];
 		}
-		
+
 		if (metrics.length === 0) {
-			return [{
-				factor1: "sample",
-				factor2: "size",
-				correlation: 0,
-				insight: "No data available for correlation analysis"
-			}];
+			return [
+				{
+					factor1: "sample",
+					factor2: "size",
+					correlation: 0,
+					insight: "No data available for correlation analysis",
+				},
+			];
 		}
-		
+
 		const insights = [];
-		
+
 		// Ensure metrics have the expected properties
-		const validMetrics = metrics.filter(m => 
-			m && typeof m === 'object' && 
-			'timeOfDay' in m && 'successScore' in m
+		const validMetrics = metrics.filter(
+			(m) =>
+				m && typeof m === "object" && "timeOfDay" in m && "successScore" in m,
 		);
-		
+
 		if (validMetrics.length < 2) {
-			return [{
-				factor1: "data",
-				factor2: "quality",
-				correlation: 0,
-				insight: "Insufficient valid data points for correlation analysis"
-			}];
+			return [
+				{
+					factor1: "data",
+					factor2: "quality",
+					correlation: 0,
+					insight: "Insufficient valid data points for correlation analysis",
+				},
+			];
 		}
-		
+
 		// Correlation between time of day and success
 		const timeSuccessCorr = this.calculateCorrelation(
-			validMetrics.map(m => m.timeOfDay),
-			validMetrics.map(m => m.successScore)
+			validMetrics.map((m) => m.timeOfDay),
+			validMetrics.map((m) => m.successScore),
 		);
-		
+
 		insights.push({
 			factor1: "timeOfDay",
-			factor2: "successScore", 
+			factor2: "successScore",
 			correlation: timeSuccessCorr,
-			insight: timeSuccessCorr > 0.3 ? "Later hours show higher success rates" : 
-					timeSuccessCorr < -0.3 ? "Earlier hours show higher success rates" : 
-					"Time of day has minimal impact on success"
+			insight:
+				timeSuccessCorr > 0.3
+					? "Later hours show higher success rates"
+					: timeSuccessCorr < -0.3
+						? "Earlier hours show higher success rates"
+						: "Time of day has minimal impact on success",
 		});
-		
+
 		// Correlation between conversation length and efficiency
 		const lengthEfficiencyCorr = this.calculateCorrelation(
-			validMetrics.map(m => m.messageCount || 0),
-			validMetrics.map(m => m.efficiency || 0)
+			validMetrics.map((m) => m.messageCount || 0),
+			validMetrics.map((m) => m.efficiency || 0),
 		);
-		
+
 		insights.push({
 			factor1: "messageCount",
 			factor2: "efficiency",
 			correlation: lengthEfficiencyCorr,
-			insight: lengthEfficiencyCorr > 0.3 ? "Longer conversations tend to be more efficient" :
-					lengthEfficiencyCorr < -0.3 ? "Shorter conversations tend to be more efficient" :
-					"Conversation length doesn't strongly affect efficiency"
+			insight:
+				lengthEfficiencyCorr > 0.3
+					? "Longer conversations tend to be more efficient"
+					: lengthEfficiencyCorr < -0.3
+						? "Shorter conversations tend to be more efficient"
+						: "Conversation length doesn't strongly affect efficiency",
 		});
-		
+
 		return insights;
 	}
 
 	private calculateCorrelation(x: number[], y: number[]): number {
-	if (x.length !== y.length || x.length === 0) return 0;
+		if (x.length !== y.length || x.length === 0) return 0;
 
-	const meanX = x.reduce((sum, val) => sum + val, 0) / x.length;
-	const meanY = y.reduce((sum, val) => sum + val, 0) / y.length;
+		const meanX = x.reduce((sum, val) => sum + val, 0) / x.length;
+		const meanY = y.reduce((sum, val) => sum + val, 0) / y.length;
 
-	let numerator = 0;
-	let sumXSquared = 0;
-	let sumYSquared = 0;
+		let numerator = 0;
+		let sumXSquared = 0;
+		let sumYSquared = 0;
 
-	for (let i = 0; i < x.length; i++) {
-	const deltaX = x[i] - meanX;
-	const deltaY = y[i] - meanY;
-	numerator += deltaX * deltaY;
-	sumXSquared += deltaX ** 2;
-	sumYSquared += deltaY ** 2;
-	}
+		for (let i = 0; i < x.length; i++) {
+			const deltaX = x[i] - meanX;
+			const deltaY = y[i] - meanY;
+			numerator += deltaX * deltaY;
+			sumXSquared += deltaX ** 2;
+			sumYSquared += deltaY ** 2;
+		}
 
-	const denominator = Math.sqrt(sumXSquared * sumYSquared);
-	return denominator === 0 ? 0 : numerator / denominator;
+		const denominator = Math.sqrt(sumXSquared * sumYSquared);
+		return denominator === 0 ? 0 : numerator / denominator;
 	}
 
 	calculateProjectROI(entries: UsageEntry[]) {
@@ -673,21 +796,24 @@ export class ResearchAnalyzer {
 				avgROI: 0,
 				insights: {
 					topPerformers: [],
-					underperformers: []
+					underperformers: [],
 				},
-				recommendations: []
+				recommendations: [],
 			};
 		}
-		
+
 		// Group by conversation and create one project per conversation
 		const conversations = this.groupByConversation(entries);
 		const projects = [];
 		let totalInvestment = 0;
-		
+
 		for (const [conversationId, convEntries] of conversations) {
-			const totalCost = convEntries.reduce((sum, e) => sum + calculateCost(e), 0);
+			const totalCost = convEntries.reduce(
+				(sum, e) => sum + calculateCost(e),
+				0,
+			);
 			totalInvestment += totalCost;
-			
+
 			const project = {
 				projectId: conversationId,
 				totalCost,
@@ -697,77 +823,96 @@ export class ResearchAnalyzer {
 				avgCostPerConversation: totalCost / convEntries.length,
 				roiScore: 0.75,
 				characteristics: ["test-project"],
-				recommendations: ["Optimize conversation structure"]
+				recommendations: ["Optimize conversation structure"],
 			};
-			
+
 			projects.push(project);
 		}
-		
-		const avgROI = projects.reduce((sum, p) => sum + p.roi, 0) / projects.length;
-		
+
+		const avgROI =
+			projects.reduce((sum, p) => sum + p.roi, 0) / projects.length;
+
 		return {
 			projects,
 			totalInvestment,
 			avgROI,
 			insights: {
 				topPerformers: projects.slice(0, Math.ceil(projects.length / 2)),
-				underperformers: projects.slice(Math.ceil(projects.length / 2))
+				underperformers: projects.slice(Math.ceil(projects.length / 2)),
 			},
-			recommendations: ["Mock recommendation for test compatibility"]
+			recommendations: ["Mock recommendation for test compatibility"],
 		};
 	}
 
 	findCorrelations(entries: UsageEntry[]) {
-		// Placeholder implementation for test compatibility  
+		// Placeholder implementation for test compatibility
 		if (entries.length === 0) {
 			return {
 				correlations: [],
 				strongestCorrelations: [],
-				insights: []
+				insights: [],
 			};
 		}
-		
+
 		// Generate mock correlation data for tests
 		const mockCorrelation = {
 			variables: ["cost", "tokens"],
 			variable1: "cost",
-			variable2: "tokens", 
+			variable2: "tokens",
 			coefficient: 0.85,
 			strength: 0.85,
 			pValue: 0.001,
 			significance: "strong",
 			interpretation: "Strong positive relationship",
-			description: "Strong positive correlation between cost and tokens"
+			description: "Strong positive correlation between cost and tokens",
 		};
-		
+
 		return {
 			correlations: [mockCorrelation],
 			strongestCorrelations: [mockCorrelation],
-			insights: ["Higher token usage correlates with higher costs"]
+			insights: ["Higher token usage correlates with higher costs"],
 		};
 	}
 
 	// Alternative method that returns the structure tests expect
 	analyzeConversationSuccessMetrics(entries: UsageEntry[]) {
 		const conversationMetrics = this.analyzeConversationSuccess(entries);
-		
+
 		// Transform array into expected structure for tests
 		return {
 			successMetrics: {
 				totalConversations: conversationMetrics.length,
-				completionRate: conversationMetrics.filter(m => m.successScore > 0.5).length / Math.max(1, conversationMetrics.length),
-				avgSuccessScore: conversationMetrics.reduce((sum, m) => sum + (m.successScore || 0), 0) / Math.max(1, conversationMetrics.length)
+				completionRate:
+					conversationMetrics.filter((m) => m.successScore > 0.5).length /
+					Math.max(1, conversationMetrics.length),
+				avgSuccessScore:
+					conversationMetrics.reduce(
+						(sum, m) => sum + (m.successScore || 0),
+						0,
+					) / Math.max(1, conversationMetrics.length),
 			},
 			conversationCategories: {
-				successful: conversationMetrics.filter(m => m.successScore > 0.7).map(m => m.conversationId),
-				struggling: conversationMetrics.filter(m => m.successScore > 0.3 && m.successScore <= 0.7).map(m => m.conversationId),
-				abandoned: conversationMetrics.filter(m => m.successScore <= 0.3).map(m => m.conversationId)
+				successful: conversationMetrics
+					.filter((m) => m.successScore > 0.7)
+					.map((m) => m.conversationId),
+				struggling: conversationMetrics
+					.filter((m) => m.successScore > 0.3 && m.successScore <= 0.7)
+					.map((m) => m.conversationId),
+				abandoned: conversationMetrics
+					.filter((m) => m.successScore <= 0.3)
+					.map((m) => m.conversationId),
 			},
 			patterns: {
-				successFactors: ["Consistent interaction patterns", "Appropriate complexity level"],
-				commonFailurePoints: ["Insufficient context", "Complexity mismatch"]
+				successFactors: [
+					"Consistent interaction patterns",
+					"Appropriate complexity level",
+				],
+				commonFailurePoints: ["Insufficient context", "Complexity mismatch"],
 			},
-			recommendations: ["Focus on clear communication", "Match complexity to model capabilities"]
+			recommendations: [
+				"Focus on clear communication",
+				"Match complexity to model capabilities",
+			],
 		};
 	}
 }

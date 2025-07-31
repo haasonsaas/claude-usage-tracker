@@ -67,8 +67,10 @@ export function loadConfig(configPath?: string): AppConfig {
 	}
 
 	// Get config path from CLI if not explicitly provided
-	if (!configPath && typeof process !== 'undefined' && process.argv) {
-		const configIndex = process.argv.findIndex(arg => arg === '-c' || arg === '--config');
+	if (!configPath && typeof process !== "undefined" && process.argv) {
+		const configIndex = process.argv.findIndex(
+			(arg) => arg === "-c" || arg === "--config",
+		);
 		if (configIndex !== -1 && process.argv[configIndex + 1]) {
 			configPath = process.argv[configIndex + 1];
 		}
@@ -112,11 +114,11 @@ export function loadConfig(configPath?: string): AppConfig {
 	try {
 		const validatedConfig = ConfigSchema.parse(configData);
 		cachedConfig = validatedConfig;
-		
+
 		if (process.env.NODE_ENV !== "test") {
 			console.log(`📝 Loaded configuration from: ${usedPath}`);
 		}
-		
+
 		return validatedConfig;
 	} catch (error) {
 		if (error instanceof z.ZodError) {

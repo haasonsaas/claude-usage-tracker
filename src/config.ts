@@ -15,17 +15,13 @@ export const CLAUDE_DATA_PATHS = new Proxy([] as string[], {
 		if (typeof prop === "string" && !isNaN(Number(prop))) {
 			const index = Number(prop);
 			const path = paths[index];
-			return path?.startsWith("~") 
-				? join(homedir(), path.slice(1))
-				: path;
+			return path?.startsWith("~") ? join(homedir(), path.slice(1)) : path;
 		}
 		if (prop === "length") return paths.length;
 		if (prop === Symbol.iterator) {
 			return function* () {
 				for (const path of paths) {
-					yield path.startsWith("~") 
-						? join(homedir(), path.slice(1))
-						: path;
+					yield path.startsWith("~") ? join(homedir(), path.slice(1)) : path;
 				}
 			};
 		}
@@ -37,11 +33,13 @@ export const MODEL_PRICING = new Proxy({} as any, {
 	get(_target, prop) {
 		const pricing = getModelPricing();
 		const model = pricing[prop as string];
-		return model ? { 
-			input: model.input, 
-			output: model.output, 
-			cached: model.cached 
-		} : undefined;
+		return model
+			? {
+					input: model.input,
+					output: model.output,
+					cached: model.cached,
+				}
+			: undefined;
 	},
 	ownKeys(_target) {
 		return Object.keys(getModelPricing());
@@ -76,11 +74,11 @@ export const TOKENS_PER_HOUR_ESTIMATES = new Proxy({} as any, {
 });
 
 // Direct exports for new code that wants to use the config system directly
-export { 
-	loadConfig, 
-	getModelPricing, 
-	getRateLimits, 
-	getTokenEstimates, 
+export {
+	loadConfig,
+	getModelPricing,
+	getRateLimits,
+	getTokenEstimates,
 	getDataPaths,
-	getBatchApiDiscount 
+	getBatchApiDiscount,
 } from "./config-loader.js";

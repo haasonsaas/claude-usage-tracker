@@ -15,7 +15,10 @@ const createMockEntry = (overrides: Partial<UsageEntry> = {}): UsageEntry => ({
 	...overrides,
 });
 
-const createDateEntry = (daysAgo: number, overrides: Partial<UsageEntry> = {}): UsageEntry => {
+const createDateEntry = (
+	daysAgo: number,
+	overrides: Partial<UsageEntry> = {},
+): UsageEntry => {
 	const date = new Date();
 	date.setDate(date.getDate() - daysAgo);
 	return createMockEntry({
@@ -24,7 +27,10 @@ const createDateEntry = (daysAgo: number, overrides: Partial<UsageEntry> = {}): 
 	});
 };
 
-const createProjectEntry = (projectId: string, overrides: Partial<UsageEntry> = {}): UsageEntry => {
+const createProjectEntry = (
+	projectId: string,
+	overrides: Partial<UsageEntry> = {},
+): UsageEntry => {
 	return createMockEntry({
 		conversationId: `${projectId}-conversation`,
 		...overrides,
@@ -48,16 +54,16 @@ describe("ResearchAnalyzer", () => {
 					prompt_tokens: 300,
 					completion_tokens: 900,
 				}),
-				
+
 				// Long, potentially struggling conversation
 				...Array.from({ length: 15 }, (_, i) =>
 					createMockEntry({
 						conversationId: "struggling-1",
 						prompt_tokens: 1000,
 						completion_tokens: 800, // Lower completion ratio
-					})
+					}),
 				),
-				
+
 				// Abandoned conversation (single exchange)
 				createMockEntry({
 					conversationId: "abandoned-1",
@@ -99,8 +105,10 @@ describe("ResearchAnalyzer", () => {
 			];
 
 			const result = analyzer.analyzeConversationSuccessMetrics(entries);
-			
-			expect(result.conversationCategories.successful.length).toBeGreaterThan(0);
+
+			expect(result.conversationCategories.successful.length).toBeGreaterThan(
+				0,
+			);
 			expect(result.successMetrics.avgSuccessScore).toBeGreaterThan(0.7);
 		});
 
@@ -110,12 +118,14 @@ describe("ResearchAnalyzer", () => {
 					conversationId: "very-long",
 					prompt_tokens: 1500,
 					completion_tokens: 500, // Poor ratio
-				})
+				}),
 			);
 
 			const result = analyzer.analyzeConversationSuccessMetrics(entries);
-			
-			expect(result.conversationCategories.struggling.length).toBeGreaterThan(0);
+
+			expect(result.conversationCategories.struggling.length).toBeGreaterThan(
+				0,
+			);
 		});
 
 		it("should provide actionable success factors", () => {
@@ -127,7 +137,7 @@ describe("ResearchAnalyzer", () => {
 						model: "claude-3.5-sonnet-20241022",
 						prompt_tokens: 400,
 						completion_tokens: 1200,
-					})
+					}),
 				),
 				...Array.from({ length: 3 }, (_, i) =>
 					createMockEntry({
@@ -135,16 +145,18 @@ describe("ResearchAnalyzer", () => {
 						model: "claude-opus-4-20250514",
 						prompt_tokens: 2000,
 						completion_tokens: 1000,
-					})
+					}),
 				),
 			];
 
 			const result = analyzer.analyzeConversationSuccessMetrics(entries);
-			
+
 			expect(result.patterns.successFactors.length).toBeGreaterThan(0);
-			expect(result.patterns.successFactors.some(factor => 
-				typeof factor === "string" && factor.length > 0
-			)).toBe(true);
+			expect(
+				result.patterns.successFactors.some(
+					(factor) => typeof factor === "string" && factor.length > 0,
+				),
+			).toBe(true);
 		});
 	});
 
@@ -158,9 +170,9 @@ describe("ResearchAnalyzer", () => {
 						prompt_tokens: 800,
 						completion_tokens: 1600,
 						model: "claude-3.5-sonnet-20241022",
-					})
+					}),
 				),
-				
+
 				// Low-efficiency project with expensive usage
 				...Array.from({ length: 10 }, (_, i) =>
 					createProjectEntry("low-roi-project", {
@@ -168,7 +180,7 @@ describe("ResearchAnalyzer", () => {
 						prompt_tokens: 2000,
 						completion_tokens: 1000,
 						model: "claude-opus-4-20250514",
-					})
+					}),
 				),
 			];
 
@@ -180,7 +192,7 @@ describe("ResearchAnalyzer", () => {
 			expect(result.insights.topPerformers).toBeInstanceOf(Array);
 			expect(result.insights.underperformers).toBeInstanceOf(Array);
 
-			result.projects.forEach(project => {
+			result.projects.forEach((project) => {
 				expect(project.projectId).toBeTruthy();
 				expect(project.totalCost).toBeGreaterThan(0);
 				expect(project.conversationCount).toBeGreaterThan(0);
@@ -199,19 +211,19 @@ describe("ResearchAnalyzer", () => {
 					completion_tokens: 2000,
 					model: "claude-3.5-sonnet-20241022",
 				}),
-				
+
 				// Inefficient project
 				...Array.from({ length: 20 }, (_, i) =>
 					createProjectEntry("inefficient-proj", {
 						prompt_tokens: 3000,
 						completion_tokens: 1000,
 						model: "claude-opus-4-20250514",
-					})
+					}),
 				),
 			];
 
 			const result = analyzer.calculateProjectROI(entries);
-			
+
 			if (result.projects.length >= 2) {
 				expect(result.insights.topPerformers.length).toBeGreaterThan(0);
 				expect(result.insights.underperformers.length).toBeGreaterThan(0);
@@ -223,12 +235,15 @@ describe("ResearchAnalyzer", () => {
 				createProjectEntry("analysis-project", {
 					prompt_tokens: 1000 + i * 100,
 					completion_tokens: 2000 - i * 50,
-					model: i % 2 === 0 ? "claude-opus-4-20250514" : "claude-3.5-sonnet-20241022",
-				})
+					model:
+						i % 2 === 0
+							? "claude-opus-4-20250514"
+							: "claude-3.5-sonnet-20241022",
+				}),
 			);
 
 			const result = analyzer.calculateProjectROI(entries);
-			
+
 			if (result.projects.length > 0) {
 				const project = result.projects[0];
 				expect(project.recommendations).toBeInstanceOf(Array);
@@ -240,19 +255,24 @@ describe("ResearchAnalyzer", () => {
 	describe("findCorrelations", () => {
 		it("should find correlations between usage metrics", () => {
 			const entries: UsageEntry[] = [];
-			
+
 			// Create patterns: time of day vs cost, model vs efficiency
 			for (let hour = 8; hour < 18; hour++) {
 				const date = new Date();
 				date.setHours(hour);
-				
-				entries.push(createMockEntry({
-					conversationId: `hourly-${hour}`,
-					timestamp: date.toISOString(),
-					prompt_tokens: hour * 100, // Cost increases with hour
-					completion_tokens: (18 - hour) * 150, // Efficiency decreases
-					model: hour < 12 ? "claude-3.5-sonnet-20241022" : "claude-opus-4-20250514",
-				}));
+
+				entries.push(
+					createMockEntry({
+						conversationId: `hourly-${hour}`,
+						timestamp: date.toISOString(),
+						prompt_tokens: hour * 100, // Cost increases with hour
+						completion_tokens: (18 - hour) * 150, // Efficiency decreases
+						model:
+							hour < 12
+								? "claude-3.5-sonnet-20241022"
+								: "claude-opus-4-20250514",
+					}),
+				);
 			}
 
 			const result = analyzer.findCorrelations(entries);
@@ -261,7 +281,7 @@ describe("ResearchAnalyzer", () => {
 			expect(result.strongestCorrelations).toBeInstanceOf(Array);
 			expect(result.insights).toBeInstanceOf(Array);
 
-			result.correlations.forEach(correlation => {
+			result.correlations.forEach((correlation) => {
 				expect(correlation.variable1).toBeTruthy();
 				expect(correlation.variable2).toBeTruthy();
 				expect(correlation.strength).toBeGreaterThanOrEqual(-1);
@@ -273,27 +293,32 @@ describe("ResearchAnalyzer", () => {
 
 		it("should identify time-based patterns", () => {
 			const entries: UsageEntry[] = [];
-			
+
 			// Weekend vs weekday patterns
 			for (let day = 0; day < 14; day++) {
 				const date = new Date();
 				date.setDate(date.getDate() - day);
 				const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-				
-				entries.push(createDateEntry(day, {
-					conversationId: `day-${day}`,
-					prompt_tokens: isWeekend ? 2000 : 1000,
-					completion_tokens: isWeekend ? 1000 : 2000,
-				}));
+
+				entries.push(
+					createDateEntry(day, {
+						conversationId: `day-${day}`,
+						prompt_tokens: isWeekend ? 2000 : 1000,
+						completion_tokens: isWeekend ? 1000 : 2000,
+					}),
+				);
 			}
 
 			const result = analyzer.findCorrelations(entries);
-			
-			const timeCorrelation = result.correlations.find(c => 
-				c.variable1.includes("time") || c.variable2.includes("time") ||
-				c.variable1.includes("day") || c.variable2.includes("day")
+
+			const timeCorrelation = result.correlations.find(
+				(c) =>
+					c.variable1.includes("time") ||
+					c.variable2.includes("time") ||
+					c.variable1.includes("day") ||
+					c.variable2.includes("day"),
 			);
-			
+
 			if (timeCorrelation) {
 				expect(timeCorrelation.strength).not.toBe(0);
 			}
@@ -308,9 +333,9 @@ describe("ResearchAnalyzer", () => {
 						model: "claude-opus-4-20250514",
 						prompt_tokens: 2000 + i * 100,
 						completion_tokens: 3000 + i * 150,
-					})
+					}),
 				),
-				
+
 				// Sonnet conversations - simpler, cheaper
 				...Array.from({ length: 10 }, (_, i) =>
 					createMockEntry({
@@ -318,16 +343,16 @@ describe("ResearchAnalyzer", () => {
 						model: "claude-3.5-sonnet-20241022",
 						prompt_tokens: 800 + i * 50,
 						completion_tokens: 1200 + i * 75,
-					})
+					}),
 				),
 			];
 
 			const result = analyzer.findCorrelations(entries);
-			
-			const modelCorrelation = result.correlations.find(c => 
-				c.variable1.includes("model") || c.variable2.includes("model")
+
+			const modelCorrelation = result.correlations.find(
+				(c) => c.variable1.includes("model") || c.variable2.includes("model"),
 			);
-			
+
 			if (modelCorrelation) {
 				expect(Math.abs(modelCorrelation.strength)).toBeGreaterThan(0.1);
 			}
@@ -339,13 +364,15 @@ describe("ResearchAnalyzer", () => {
 					conversationId: `insight-${i}`,
 					prompt_tokens: 1000 + i * 100,
 					completion_tokens: 2000 - i * 50, // Negative correlation
-				})
+				}),
 			);
 
 			const result = analyzer.findCorrelations(entries);
-			
+
 			expect(result.insights.length).toBeGreaterThan(0);
-			expect(result.insights.every(insight => typeof insight === "string")).toBe(true);
+			expect(
+				result.insights.every((insight) => typeof insight === "string"),
+			).toBe(true);
 		});
 	});
 
@@ -367,7 +394,9 @@ describe("ResearchAnalyzer", () => {
 		it("should handle single conversation", () => {
 			const entries = [createMockEntry()];
 
-			expect(() => analyzer.analyzeConversationSuccessMetrics(entries)).not.toThrow();
+			expect(() =>
+				analyzer.analyzeConversationSuccessMetrics(entries),
+			).not.toThrow();
 			expect(() => analyzer.calculateProjectROI(entries)).not.toThrow();
 			expect(() => analyzer.findCorrelations(entries)).not.toThrow();
 		});
@@ -404,7 +433,7 @@ describe("ResearchAnalyzer", () => {
 					conversationId: "identical",
 					prompt_tokens: 1000,
 					completion_tokens: 2000,
-				})
+				}),
 			);
 
 			const successResult = analyzer.analyzeConversationSuccessMetrics(entries);
@@ -421,23 +450,31 @@ describe("ResearchAnalyzer", () => {
 					conversationId: `validation-${i}`,
 					prompt_tokens: 1000,
 					completion_tokens: 2000,
-				})
+				}),
 			);
 
 			const successResult = analyzer.analyzeConversationSuccessMetrics(entries);
-			expect(successResult.successMetrics.completionRate).toBeGreaterThanOrEqual(0);
-			expect(successResult.successMetrics.completionRate).toBeLessThanOrEqual(1);
-			expect(successResult.successMetrics.avgSuccessScore).toBeGreaterThanOrEqual(0);
-			expect(successResult.successMetrics.avgSuccessScore).toBeLessThanOrEqual(1);
+			expect(
+				successResult.successMetrics.completionRate,
+			).toBeGreaterThanOrEqual(0);
+			expect(successResult.successMetrics.completionRate).toBeLessThanOrEqual(
+				1,
+			);
+			expect(
+				successResult.successMetrics.avgSuccessScore,
+			).toBeGreaterThanOrEqual(0);
+			expect(successResult.successMetrics.avgSuccessScore).toBeLessThanOrEqual(
+				1,
+			);
 
 			const roiResult = analyzer.calculateProjectROI(entries);
-			roiResult.projects.forEach(project => {
+			roiResult.projects.forEach((project) => {
 				expect(project.roiScore).toBeGreaterThanOrEqual(0);
 				expect(project.roiScore).toBeLessThanOrEqual(1);
 			});
 
 			const correlationResult = analyzer.findCorrelations(entries);
-			correlationResult.correlations.forEach(correlation => {
+			correlationResult.correlations.forEach((correlation) => {
 				expect(correlation.strength).toBeGreaterThanOrEqual(-1);
 				expect(correlation.strength).toBeLessThanOrEqual(1);
 			});
@@ -451,14 +488,14 @@ describe("ResearchAnalyzer", () => {
 					prompt_tokens: 1,
 					completion_tokens: 1,
 				}),
-				
+
 				// Extremely long/expensive conversation
 				...Array.from({ length: 1000 }, (_, i) =>
 					createMockEntry({
 						conversationId: "massive",
 						prompt_tokens: 5000,
 						completion_tokens: 10000,
-					})
+					}),
 				),
 			];
 
@@ -475,7 +512,9 @@ describe("ResearchAnalyzer", () => {
 			const entries = [createMockEntry()];
 
 			const successResult = analyzer.analyzeConversationSuccessMetrics(entries);
-			expect(successResult.patterns.successFactors.length).toBeGreaterThanOrEqual(0);
+			expect(
+				successResult.patterns.successFactors.length,
+			).toBeGreaterThanOrEqual(0);
 			expect(successResult.recommendations.length).toBeGreaterThanOrEqual(0);
 
 			const roiResult = analyzer.calculateProjectROI(entries);

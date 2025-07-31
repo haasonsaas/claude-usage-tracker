@@ -1,4 +1,8 @@
-import { clearConfigCache, setTestConfig, clearTestConfig } from "./config-loader.js";
+import {
+	clearConfigCache,
+	setTestConfig,
+	clearTestConfig,
+} from "./config-loader.js";
 
 // Mock configuration for tests
 export const TEST_CONFIG = {
@@ -49,14 +53,14 @@ export function setupTestConfig() {
 	// Clear any cached config
 	clearConfigCache();
 	clearTestConfig();
-	
+
 	// Set up test environment
 	const originalEnv = process.env.NODE_ENV;
 	process.env.NODE_ENV = "test";
-	
+
 	// Set the test configuration
 	setTestConfig(TEST_CONFIG);
-	
+
 	return () => {
 		process.env.NODE_ENV = originalEnv;
 		clearConfigCache();
@@ -77,7 +81,7 @@ export function createMockUsageEntries() {
 			isBatchAPI: false,
 		},
 		{
-			id: "test-2", 
+			id: "test-2",
 			timestamp: new Date("2024-01-15T11:00:00Z").toISOString(),
 			model: "claude-opus-4-20250514",
 			conversationId: "conv-2",

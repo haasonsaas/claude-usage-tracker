@@ -15,7 +15,10 @@ const createMockEntry = (overrides: Partial<UsageEntry> = {}): UsageEntry => ({
 	...overrides,
 });
 
-const createDateEntry = (daysAgo: number, overrides: Partial<UsageEntry> = {}): UsageEntry => {
+const createDateEntry = (
+	daysAgo: number,
+	overrides: Partial<UsageEntry> = {},
+): UsageEntry => {
 	const date = new Date();
 	date.setDate(date.getDate() - daysAgo);
 	return createMockEntry({
@@ -31,13 +34,15 @@ describe("PredictiveAnalyzer", () => {
 		it("should predict budget burn correctly", () => {
 			const now = new Date();
 			const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-			
+
 			const entries: UsageEntry[] = Array.from({ length: 10 }, (_, i) =>
 				createMockEntry({
-					timestamp: new Date(currentMonth.getTime() + i * 24 * 60 * 60 * 1000).toISOString(),
+					timestamp: new Date(
+						currentMonth.getTime() + i * 24 * 60 * 60 * 1000,
+					).toISOString(),
 					prompt_tokens: 1000,
 					completion_tokens: 2000,
-				})
+				}),
 			);
 
 			const result = analyzer.predictBudgetBurn(entries, 1000);
@@ -52,37 +57,45 @@ describe("PredictiveAnalyzer", () => {
 
 		it("should handle increasing spend trend", () => {
 			const now = new Date();
-			
+
 			// Create entries with increasing cost over time - must be within last 14 days from now
 			const entries: UsageEntry[] = Array.from({ length: 14 }, (_, i) =>
 				createMockEntry({
-					timestamp: new Date(now.getTime() - (14 - i) * 24 * 60 * 60 * 1000).toISOString(),
+					timestamp: new Date(
+						now.getTime() - (14 - i) * 24 * 60 * 60 * 1000,
+					).toISOString(),
 					prompt_tokens: 1000 + i * 200, // Increasing prompt size
 					completion_tokens: 2000 + i * 400,
-				})
+				}),
 			);
 
 			const result = analyzer.predictBudgetBurn(entries, 1000);
 			expect(result.trendDirection).toBe("increasing");
-			expect(result.recommendations.some(r => r.includes("increasing"))).toBe(true);
+			expect(result.recommendations.some((r) => r.includes("increasing"))).toBe(
+				true,
+			);
 		});
 
 		it("should calculate days until budget exhaustion", () => {
 			const now = new Date();
 			const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-			
+
 			const entries: UsageEntry[] = Array.from({ length: 5 }, (_, i) =>
 				createMockEntry({
-					timestamp: new Date(currentMonth.getTime() + i * 24 * 60 * 60 * 1000).toISOString(),
+					timestamp: new Date(
+						currentMonth.getTime() + i * 24 * 60 * 60 * 1000,
+					).toISOString(),
 					prompt_tokens: 5000, // High cost to trigger budget warning
 					completion_tokens: 10000,
-				})
+				}),
 			);
 
 			const result = analyzer.predictBudgetBurn(entries, 100); // Small budget
 
 			expect(result.daysUntilBudgetExhausted).toBeGreaterThanOrEqual(0);
-			expect(result.recommendations.some(r => r.includes("budget"))).toBe(true);
+			expect(result.recommendations.some((r) => r.includes("budget"))).toBe(
+				true,
+			);
 		});
 
 		it("should provide confidence levels based on data quality", () => {
@@ -92,31 +105,39 @@ describe("PredictiveAnalyzer", () => {
 			expect(minimalResult.confidenceLevel).toBeLessThan(0.8);
 
 			// Test with rich data (higher confidence)
-			const richEntries = Array.from({ length: 150 }, (_, i) => createDateEntry(i % 30, {
-				conversationId: `conv-${Math.floor(i / 5)}`,
-				prompt_tokens: 1000 + Math.random() * 200,
-				completion_tokens: 2000 + Math.random() * 400,
-			}));
+			const richEntries = Array.from({ length: 150 }, (_, i) =>
+				createDateEntry(i % 30, {
+					conversationId: `conv-${Math.floor(i / 5)}`,
+					prompt_tokens: 1000 + Math.random() * 200,
+					completion_tokens: 2000 + Math.random() * 400,
+				}),
+			);
 			const richResult = analyzer.predictBudgetBurn(richEntries);
-			expect(richResult.confidenceLevel).toBeGreaterThan(minimalResult.confidenceLevel);
+			expect(richResult.confidenceLevel).toBeGreaterThan(
+				minimalResult.confidenceLevel,
+			);
 		});
 
 		it("should handle different trend directions", () => {
 			// Decreasing trend - use 20 entries for consistency
-			const decreasingEntries = Array.from({ length: 20 }, (_, i) => createDateEntry(19 - i, {
-				prompt_tokens: 2000 - i * 80, // More pronounced decrease over time
-				completion_tokens: 4000 - i * 160,
-			}));
+			const decreasingEntries = Array.from({ length: 20 }, (_, i) =>
+				createDateEntry(19 - i, {
+					prompt_tokens: 2000 - i * 80, // More pronounced decrease over time
+					completion_tokens: 4000 - i * 160,
+				}),
+			);
 			const decreasing = analyzer.predictBudgetBurn(decreasingEntries);
 			expect(decreasing.trendDirection).toBe("decreasing");
 
 			// Stable trend - create entries in a way that ensures both periods have exactly the same cost
 			const stableEntries: UsageEntry[] = [];
 			for (let i = 0; i < 14; i++) {
-				stableEntries.push(createDateEntry(13 - i, {
-					prompt_tokens: 1000, 
-					completion_tokens: 2000,
-				}));
+				stableEntries.push(
+					createDateEntry(13 - i, {
+						prompt_tokens: 1000,
+						completion_tokens: 2000,
+					}),
+				);
 			}
 			const stable = analyzer.predictBudgetBurn(stableEntries);
 			expect(stable.trendDirection).toBe("stable");
@@ -126,42 +147,48 @@ describe("PredictiveAnalyzer", () => {
 	describe("detectUsageAnomalies", () => {
 		it("should detect cost spikes", () => {
 			const baseDate = new Date();
-			
+
 			// Create normal usage for 29 days
 			const normalEntries: UsageEntry[] = Array.from({ length: 29 }, (_, i) =>
 				createMockEntry({
-					timestamp: new Date(baseDate.getTime() - (29 - i) * 24 * 60 * 60 * 1000).toISOString(),
+					timestamp: new Date(
+						baseDate.getTime() - (29 - i) * 24 * 60 * 60 * 1000,
+					).toISOString(),
 					prompt_tokens: 1000,
 					completion_tokens: 2000,
-				})
+				}),
 			);
 
 			// Add spike today
 			const spikeEntries: UsageEntry[] = Array.from({ length: 5 }, (_, i) =>
 				createMockEntry({
-					timestamp: new Date(baseDate.getTime() - i * 60 * 60 * 1000).toISOString(),
+					timestamp: new Date(
+						baseDate.getTime() - i * 60 * 60 * 1000,
+					).toISOString(),
 					prompt_tokens: 10000, // Much higher than normal
 					completion_tokens: 20000,
-				})
+				}),
 			);
 
 			const allEntries = [...normalEntries, ...spikeEntries];
 			const result = analyzer.detectUsageAnomalies(allEntries);
 
-			expect(result.some(a => a.type === "cost_spike")).toBe(true);
-			const costSpike = result.find(a => a.type === "cost_spike");
+			expect(result.some((a) => a.type === "cost_spike")).toBe(true);
+			const costSpike = result.find((a) => a.type === "cost_spike");
 			expect(costSpike?.severity).toMatch(/low|medium|high/);
 		});
 
 		it("should detect efficiency drops", () => {
 			// Create historical efficient usage (high tokens per dollar) - days 10-30 ago
-			const historicalEntries: UsageEntry[] = Array.from({ length: 20 }, (_, i) =>
-				createDateEntry(30 - i, {
-					conversationId: `hist-conv-${i}`,
-					prompt_tokens: 1000,
-					completion_tokens: 4000, 
-					total_tokens: 5000,
-				})
+			const historicalEntries: UsageEntry[] = Array.from(
+				{ length: 20 },
+				(_, i) =>
+					createDateEntry(30 - i, {
+						conversationId: `hist-conv-${i}`,
+						prompt_tokens: 1000,
+						completion_tokens: 4000,
+						total_tokens: 5000,
+					}),
 			);
 
 			// Create recent inefficient usage (low tokens per dollar) - days 1-5 ago
@@ -171,30 +198,34 @@ describe("PredictiveAnalyzer", () => {
 					prompt_tokens: 1000,
 					completion_tokens: 1000,
 					total_tokens: 2000,
-				})
+				}),
 			);
 
 			const allEntries = [...historicalEntries, ...recentEntries];
 			const result = analyzer.detectUsageAnomalies(allEntries);
 
 			// Check if efficiency drop was detected (may be zero due to data filtering edge cases)
-			expect(result.filter(a => a.type === "efficiency_drop").length).toBeGreaterThanOrEqual(0);
+			expect(
+				result.filter((a) => a.type === "efficiency_drop").length,
+			).toBeGreaterThanOrEqual(0);
 		});
 
 		it("should detect unusual weekend usage patterns", () => {
 			const entries: UsageEntry[] = [];
-			
+
 			// Normal weekday usage
 			for (let i = 0; i < 30; i++) {
 				const date = new Date();
 				date.setDate(date.getDate() - i);
 				const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-				
+
 				if (!isWeekend) {
-					entries.push(createDateEntry(i, {
-						prompt_tokens: 500,
-						completion_tokens: 1000,
-					}));
+					entries.push(
+						createDateEntry(i, {
+							prompt_tokens: 500,
+							completion_tokens: 1000,
+						}),
+					);
 				}
 			}
 
@@ -203,16 +234,20 @@ describe("PredictiveAnalyzer", () => {
 				const date = new Date();
 				date.setDate(date.getDate() - i * 7); // Saturdays
 				if (date.getDay() === 6) {
-					entries.push(createDateEntry(i * 7, {
-						prompt_tokens: 5000, // Much higher
-						completion_tokens: 10000,
-					}));
+					entries.push(
+						createDateEntry(i * 7, {
+							prompt_tokens: 5000, // Much higher
+							completion_tokens: 10000,
+						}),
+					);
 				}
 			}
 
 			const result = analyzer.detectUsageAnomalies(entries);
 			// Check if unusual pattern was detected (may be zero due to data filtering edge cases)
-			expect(result.filter(a => a.type === "unusual_pattern").length).toBeGreaterThanOrEqual(0);
+			expect(
+				result.filter((a) => a.type === "unusual_pattern").length,
+			).toBeGreaterThanOrEqual(0);
 		});
 
 		it("should handle no anomalies gracefully", () => {
@@ -220,7 +255,7 @@ describe("PredictiveAnalyzer", () => {
 				createDateEntry(i, {
 					prompt_tokens: 1000 + Math.random() * 200, // Small variation
 					completion_tokens: 2000 + Math.random() * 400,
-				})
+				}),
 			);
 
 			const result = analyzer.detectUsageAnomalies(entries);
@@ -233,18 +268,20 @@ describe("PredictiveAnalyzer", () => {
 				createDateEntry(i, {
 					prompt_tokens: 1000,
 					completion_tokens: 2000,
-				})
+				}),
 			);
 
 			// Add extreme cost spike
-			entries.push(createDateEntry(0, {
-				prompt_tokens: 50000,
-				completion_tokens: 100000,
-			}));
+			entries.push(
+				createDateEntry(0, {
+					prompt_tokens: 50000,
+					completion_tokens: 100000,
+				}),
+			);
 
 			const result = analyzer.detectUsageAnomalies(entries);
-			const costSpike = result.find(a => a.type === "cost_spike");
-			
+			const costSpike = result.find((a) => a.type === "cost_spike");
+
 			if (costSpike) {
 				expect(costSpike.severity).toMatch(/low|medium|high/);
 				expect(costSpike.deviation).toBeGreaterThan(0);
@@ -281,7 +318,7 @@ describe("PredictiveAnalyzer", () => {
 					model: "claude-3.5-sonnet-20241022",
 					prompt_tokens: 3000 + i * 100, // High complexity
 					completion_tokens: 5000 + i * 200,
-				})
+				}),
 			);
 
 			const result = analyzer.generateModelSuggestions(entries);
@@ -327,7 +364,9 @@ describe("PredictiveAnalyzer", () => {
 			const result = analyzer.generateModelSuggestions(entries);
 
 			if (result.length > 1) {
-				expect(result[0].potentialSavings).toBeGreaterThanOrEqual(result[1].potentialSavings);
+				expect(result[0].potentialSavings).toBeGreaterThanOrEqual(
+					result[1].potentialSavings,
+				);
 			}
 		});
 
@@ -360,13 +399,15 @@ describe("PredictiveAnalyzer", () => {
 					model: "claude-opus-4-20250514",
 					prompt_tokens: 3000,
 					completion_tokens: 4000,
-				})
+				}),
 			);
 
 			const result = analyzer.generateModelSuggestions(codingEntries);
-			
+
 			// Coding contexts should be less likely to suggest downgrading
-			const downgradeSuggestion = result.find(s => s.suggestedModel.includes("sonnet"));
+			const downgradeSuggestion = result.find((s) =>
+				s.suggestedModel.includes("sonnet"),
+			);
 			if (downgradeSuggestion) {
 				expect(downgradeSuggestion.confidence).toBeLessThan(0.9);
 			}
@@ -382,7 +423,7 @@ describe("PredictiveAnalyzer", () => {
 
 		it("should handle single entry", () => {
 			const entries = [createMockEntry()];
-			
+
 			expect(() => analyzer.predictBudgetBurn(entries)).not.toThrow();
 			expect(() => analyzer.detectUsageAnomalies(entries)).not.toThrow();
 			expect(() => analyzer.generateModelSuggestions(entries)).not.toThrow();

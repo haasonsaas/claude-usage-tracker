@@ -4,7 +4,10 @@ import { glob } from "glob";
 import { CLAUDE_DATA_PATHS } from "./config.js";
 import type { UsageEntry } from "./types.js";
 import { usageEntrySchema } from "./types.js";
-import { streamUsageData, shouldUseStreamingLoader } from "./streaming-loader.js";
+import {
+	streamUsageData,
+	shouldUseStreamingLoader,
+} from "./streaming-loader.js";
 
 interface ClaudeMessage {
 	message?: {
@@ -28,7 +31,10 @@ export async function loadUsageData(): Promise<UsageEntry[]> {
 		try {
 			return await streamUsageData();
 		} catch (error) {
-			console.warn("Streaming loader failed, falling back to synchronous loading:", error);
+			console.warn(
+				"Streaming loader failed, falling back to synchronous loading:",
+				error,
+			);
 		}
 	}
 
@@ -73,7 +79,8 @@ export async function loadUsageData(): Promise<UsageEntry[]> {
 								completion_tokens: usage.output_tokens || 0,
 								total_tokens:
 									(usage.input_tokens || 0) + (usage.output_tokens || 0),
-								cache_creation_input_tokens: usage.cache_creation_input_tokens || 0,
+								cache_creation_input_tokens:
+									usage.cache_creation_input_tokens || 0,
 								cache_read_input_tokens: usage.cache_read_input_tokens || 0,
 								isBatchAPI: false, // Default assumption
 							};
@@ -84,7 +91,9 @@ export async function loadUsageData(): Promise<UsageEntry[]> {
 								entries.push(validationResult.data);
 								validEntries++;
 							} else {
-								console.warn(`Invalid usage entry in ${file}: ${validationResult.error.message}`);
+								console.warn(
+									`Invalid usage entry in ${file}: ${validationResult.error.message}`,
+								);
 								skippedLines++;
 							}
 						}
@@ -97,7 +106,9 @@ export async function loadUsageData(): Promise<UsageEntry[]> {
 				}
 
 				if (process.env.NODE_ENV !== "production") {
-					console.log(`📁 ${file}: ${validEntries} valid entries, ${skippedLines} skipped`);
+					console.log(
+						`📁 ${file}: ${validEntries} valid entries, ${skippedLines} skipped`,
+					);
 				}
 			} catch (error) {
 				console.error(`Error reading file ${file}:`, error);

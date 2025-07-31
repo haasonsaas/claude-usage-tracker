@@ -166,25 +166,28 @@ export class ModelAdvisor {
 		// Use the config loader directly since Object.keys on the proxy doesn't work in tests
 		const allModels = Object.keys(getModelPricing());
 		let alternativeModel: string;
-		
-		if (baseRec.model.includes('opus')) {
-			alternativeModel = allModels.find(m => m.includes('sonnet')) || allModels[0];
-		} else if (baseRec.model.includes('sonnet')) {
-			alternativeModel = allModels.find(m => m.includes('opus')) || allModels[0];
+
+		if (baseRec.model.includes("opus")) {
+			alternativeModel =
+				allModels.find((m) => m.includes("sonnet")) || allModels[0];
+		} else if (baseRec.model.includes("sonnet")) {
+			alternativeModel =
+				allModels.find((m) => m.includes("opus")) || allModels[0];
 		} else {
-			alternativeModel = allModels.find(m => m !== baseRec.model) || allModels[0];
+			alternativeModel =
+				allModels.find((m) => m !== baseRec.model) || allModels[0];
 		}
-		
+
 		const alternativeModelPricing = MODEL_PRICING[alternativeModel];
-
-
 
 		// Ensure we have valid pricing data
 		if (!recommendedModelPricing || !alternativeModelPricing) {
 			return {
 				recommendedModel: baseRec.model as keyof typeof MODEL_PRICING,
 				confidence: classification.confidence,
-				reasoning: classification.reasoning + " (pricing data unavailable for cost comparison)",
+				reasoning:
+					classification.reasoning +
+					" (pricing data unavailable for cost comparison)",
 			};
 		}
 
@@ -249,35 +252,45 @@ export class ModelAdvisor {
 		taskType: TaskClassification["taskType"],
 		model: keyof typeof MODEL_PRICING,
 	): string {
-		const reasons: Record<TaskClassification["taskType"], Record<string, string>> = {
+		const reasons: Record<
+			TaskClassification["taskType"],
+			Record<string, string>
+		> = {
 			code_generation: {
 				"claude-3.5-sonnet-20241022":
 					"Sonnet 4 excels at code generation with 78% cost savings. Quality is excellent for most coding tasks.",
-				"claude-opus-4-20250514": "Opus 4 for the most complex algorithms or when you need the highest code quality.",
+				"claude-opus-4-20250514":
+					"Opus 4 for the most complex algorithms or when you need the highest code quality.",
 			},
 			debugging: {
 				"claude-3.5-sonnet-20241022":
 					"Sonnet 4 can handle most debugging tasks effectively with significant cost savings.",
-				"claude-opus-4-20250514": "Opus 4 recommended for complex debugging - better at understanding intricate code relationships.",
+				"claude-opus-4-20250514":
+					"Opus 4 recommended for complex debugging - better at understanding intricate code relationships.",
 			},
 			code_review: {
 				"claude-3.5-sonnet-20241022":
 					"Sonnet 4 provides thorough code reviews with excellent cost efficiency.",
-				"claude-opus-4-20250514": "Opus 4 for critical code reviews where you need the deepest analysis.",
+				"claude-opus-4-20250514":
+					"Opus 4 for critical code reviews where you need the deepest analysis.",
 			},
 			documentation: {
 				"claude-3.5-sonnet-20241022":
 					"Sonnet 4 is perfect for documentation - clear writing with major cost savings.",
-				"claude-opus-4-20250514": "Opus 4 overkill for most documentation tasks.",
+				"claude-opus-4-20250514":
+					"Opus 4 overkill for most documentation tasks.",
 			},
 			architecture: {
 				"claude-3.5-sonnet-20241022":
 					"Sonnet 4 can handle many architecture discussions cost-effectively.",
-				"claude-opus-4-20250514": "Opus 4 recommended for complex system design - better strategic thinking.",
+				"claude-opus-4-20250514":
+					"Opus 4 recommended for complex system design - better strategic thinking.",
 			},
 			complex_analysis: {
-				"claude-3.5-sonnet-20241022": "Sonnet 4 may miss nuances in complex analysis.",
-				"claude-opus-4-20250514": "Opus 4 essential for deep analysis - superior reasoning and context understanding.",
+				"claude-3.5-sonnet-20241022":
+					"Sonnet 4 may miss nuances in complex analysis.",
+				"claude-opus-4-20250514":
+					"Opus 4 essential for deep analysis - superior reasoning and context understanding.",
 			},
 			simple_query: {
 				"claude-3.5-sonnet-20241022":
@@ -287,12 +300,16 @@ export class ModelAdvisor {
 			refactoring: {
 				"claude-3.5-sonnet-20241022":
 					"Sonnet 4 excellent for refactoring with great cost efficiency.",
-				"claude-opus-4-20250514": "Opus 4 for complex refactoring of large codebases.",
+				"claude-opus-4-20250514":
+					"Opus 4 for complex refactoring of large codebases.",
 			},
 		};
 
 		const taskReasons = reasons[taskType];
-		return taskReasons?.[String(model)] || `${String(model).includes("sonnet") ? "Sonnet 4 for cost efficiency" : "Opus 4 for maximum capability"}`;
+		return (
+			taskReasons?.[String(model)] ||
+			`${String(model).includes("sonnet") ? "Sonnet 4 for cost efficiency" : "Opus 4 for maximum capability"}`
+		);
 	}
 
 	private getAlternativeTradeoffs(

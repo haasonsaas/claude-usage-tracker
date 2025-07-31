@@ -15,7 +15,10 @@ const createMockEntry = (overrides: Partial<UsageEntry> = {}): UsageEntry => ({
 	...overrides,
 });
 
-const createDateEntry = (daysAgo: number, overrides: Partial<UsageEntry> = {}): UsageEntry => {
+const createDateEntry = (
+	daysAgo: number,
+	overrides: Partial<UsageEntry> = {},
+): UsageEntry => {
 	const date = new Date();
 	date.setDate(date.getDate() - daysAgo);
 	return createMockEntry({
@@ -37,7 +40,7 @@ describe("OptimizationAnalyzer", () => {
 						prompt_tokens: 1500,
 						completion_tokens: 2500,
 						model: "claude-opus-4-20250514",
-					})
+					}),
 				),
 				// Simple QA cluster
 				...Array.from({ length: 3 }, (_, i) =>
@@ -46,7 +49,7 @@ describe("OptimizationAnalyzer", () => {
 						prompt_tokens: 300,
 						completion_tokens: 600,
 						model: "claude-3.5-sonnet-20241022",
-					})
+					}),
 				),
 			];
 
@@ -57,7 +60,7 @@ describe("OptimizationAnalyzer", () => {
 			expect(result.avgClusterSize).toBeGreaterThan(0);
 
 			// Verify cluster structure
-			result.clusters.forEach(cluster => {
+			result.clusters.forEach((cluster) => {
 				expect(cluster.conversationIds).toBeInstanceOf(Array);
 				expect(cluster.conversationIds.length).toBeGreaterThan(0);
 				expect(cluster.characteristics.avgTokens).toBeGreaterThan(0);
@@ -94,13 +97,13 @@ describe("OptimizationAnalyzer", () => {
 					model: "claude-opus-4-20250514",
 					prompt_tokens: 500,
 					completion_tokens: 1000, // Simple conversation that could use Sonnet
-				})
+				}),
 			);
 
 			const result = analyzer.analyzeConversationClusters(entries);
-			
+
 			const hasOptimizationOpportunity = result.clusters.some(
-				cluster => cluster.optimization.potentialSavings > 0
+				(cluster) => cluster.optimization.potentialSavings > 0,
 			);
 			expect(hasOptimizationOpportunity).toBe(true);
 		});
@@ -116,7 +119,7 @@ describe("OptimizationAnalyzer", () => {
 						timestamp: new Date(Date.now() - i * 5 * 60 * 1000).toISOString(), // 5 minutes apart
 						prompt_tokens: 200,
 						completion_tokens: 400,
-					})
+					}),
 				),
 			];
 
@@ -125,7 +128,7 @@ describe("OptimizationAnalyzer", () => {
 			expect(result.opportunities.length).toBeGreaterThan(0);
 			expect(result.totalPotentialSavings).toBeGreaterThan(0);
 
-			result.opportunities.forEach(opportunity => {
+			result.opportunities.forEach((opportunity) => {
 				expect(opportunity.conversationId).toBeTruthy();
 				expect(opportunity.savings).toBeGreaterThan(0);
 				expect(opportunity.reasoning).toBeTruthy();
@@ -149,7 +152,7 @@ describe("OptimizationAnalyzer", () => {
 			];
 
 			const result = analyzer.identifyBatchProcessingOpportunities(entries);
-			
+
 			// Complex conversations should have fewer batching opportunities than simple ones
 			expect(result.opportunities.length).toBeLessThanOrEqual(2);
 		});
@@ -180,7 +183,7 @@ describe("OptimizationAnalyzer", () => {
 			];
 
 			const result = analyzer.identifyBatchProcessingOpportunities(entries);
-			
+
 			if (result.opportunities.length > 0) {
 				// Should prefer temporally close conversations
 				const firstOpportunity = result.opportunities[0];
@@ -200,7 +203,7 @@ describe("OptimizationAnalyzer", () => {
 						model: "claude-opus-4-20250514",
 						prompt_tokens: 200,
 						completion_tokens: 400,
-					})
+					}),
 				),
 				// Under-engineered complex tasks (Sonnet for complex stuff)
 				...Array.from({ length: 3 }, (_, i) =>
@@ -209,7 +212,7 @@ describe("OptimizationAnalyzer", () => {
 						model: "claude-3.5-sonnet-20241022",
 						prompt_tokens: 5000,
 						completion_tokens: 8000,
-					})
+					}),
 				),
 			];
 
@@ -218,7 +221,7 @@ describe("OptimizationAnalyzer", () => {
 			expect(result.recommendations.length).toBeGreaterThan(0);
 			expect(result.totalPotentialSavings).toBeGreaterThanOrEqual(0);
 
-			result.recommendations.forEach(rec => {
+			result.recommendations.forEach((rec) => {
 				expect(rec.currentModel).toBeTruthy();
 				expect(rec.recommendedModel).toBeTruthy();
 				expect(rec.conversationId).toBeTruthy();
@@ -252,16 +255,19 @@ describe("OptimizationAnalyzer", () => {
 
 		it("should provide confidence scores based on data quality", () => {
 			// High confidence scenario: many similar conversations
-			const highConfidenceEntries: UsageEntry[] = Array.from({ length: 20 }, (_, i) =>
-				createMockEntry({
-					conversationId: `similar-${i}`,
-					model: "claude-opus-4-20250514",
-					prompt_tokens: 500,
-					completion_tokens: 1000,
-				})
+			const highConfidenceEntries: UsageEntry[] = Array.from(
+				{ length: 20 },
+				(_, i) =>
+					createMockEntry({
+						conversationId: `similar-${i}`,
+						model: "claude-opus-4-20250514",
+						prompt_tokens: 500,
+						completion_tokens: 1000,
+					}),
 			);
 
-			const highConfidenceResult = analyzer.generateModelSwitchingRecommendations(highConfidenceEntries);
+			const highConfidenceResult =
+				analyzer.generateModelSwitchingRecommendations(highConfidenceEntries);
 
 			// Low confidence scenario: few diverse conversations
 			const lowConfidenceEntries: UsageEntry[] = [
@@ -279,11 +285,18 @@ describe("OptimizationAnalyzer", () => {
 				}),
 			];
 
-			const lowConfidenceResult = analyzer.generateModelSwitchingRecommendations(lowConfidenceEntries);
+			const lowConfidenceResult =
+				analyzer.generateModelSwitchingRecommendations(lowConfidenceEntries);
 
-			if (highConfidenceResult.recommendations.length > 0 && lowConfidenceResult.recommendations.length > 0) {
-				expect(highConfidenceResult.recommendations[0].confidence)
-					.toBeGreaterThanOrEqual(lowConfidenceResult.recommendations[0].confidence);
+			if (
+				highConfidenceResult.recommendations.length > 0 &&
+				lowConfidenceResult.recommendations.length > 0
+			) {
+				expect(
+					highConfidenceResult.recommendations[0].confidence,
+				).toBeGreaterThanOrEqual(
+					lowConfidenceResult.recommendations[0].confidence,
+				);
 			}
 		});
 	});
@@ -307,8 +320,12 @@ describe("OptimizationAnalyzer", () => {
 			const entries = [createMockEntry()];
 
 			expect(() => analyzer.analyzeConversationClusters(entries)).not.toThrow();
-			expect(() => analyzer.identifyBatchProcessingOpportunities(entries)).not.toThrow();
-			expect(() => analyzer.generateModelSwitchingRecommendations(entries)).not.toThrow();
+			expect(() =>
+				analyzer.identifyBatchProcessingOpportunities(entries),
+			).not.toThrow();
+			expect(() =>
+				analyzer.generateModelSwitchingRecommendations(entries),
+			).not.toThrow();
 		});
 
 		it("should handle conversations with zero cost", () => {
@@ -333,7 +350,9 @@ describe("OptimizationAnalyzer", () => {
 				createMockEntry({ timestamp: "2025-07-31T25:00:00.000Z" }),
 			];
 
-			expect(() => analyzer.identifyBatchProcessingOpportunities(entries)).not.toThrow();
+			expect(() =>
+				analyzer.identifyBatchProcessingOpportunities(entries),
+			).not.toThrow();
 		});
 
 		it("should handle conversations with same characteristics", () => {
@@ -343,7 +362,7 @@ describe("OptimizationAnalyzer", () => {
 					prompt_tokens: 1000,
 					completion_tokens: 2000,
 					model: "claude-opus-4-20250514",
-				})
+				}),
 			);
 
 			const clusters = analyzer.analyzeConversationClusters(entries);
@@ -359,12 +378,12 @@ describe("OptimizationAnalyzer", () => {
 					conversationId: `quality-test-${i}`,
 					prompt_tokens: 1000 + Math.random() * 500,
 					completion_tokens: 2000 + Math.random() * 1000,
-				})
+				}),
 			);
 
 			const result = analyzer.analyzeConversationClusters(entries);
-			
-			result.clusters.forEach(cluster => {
+
+			result.clusters.forEach((cluster) => {
 				expect(cluster.characteristics.avgTokens).toBeGreaterThan(0);
 				expect(cluster.characteristics.avgCost).toBeGreaterThan(0);
 				expect(cluster.characteristics.complexity).toBeGreaterThanOrEqual(0);

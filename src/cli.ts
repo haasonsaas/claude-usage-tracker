@@ -23,15 +23,22 @@ import { OptimizationAnalyzer } from "./optimization-analytics.js";
 import { PatternAnalyzer } from "./pattern-analysis.js";
 import { PredictiveAnalyzer } from "./predictive-analytics.js";
 import { ResearchAnalyzer } from "./research-analytics.js";
+import { ConversationLengthAnalyzer } from "./conversation-length-analytics.js";
 import { UsageWatcher } from "./watch-monitor.js";
 
 function handleError(error: unknown, isJsonMode = false): void {
 	if (isJsonMode) {
-		console.log(JSON.stringify({
-			error: "Command failed",
-			message: error instanceof Error ? error.message : String(error),
-			timestamp: new Date().toISOString()
-		}, null, 2));
+		console.log(
+			JSON.stringify(
+				{
+					error: "Command failed",
+					message: error instanceof Error ? error.message : String(error),
+					timestamp: new Date().toISOString(),
+				},
+				null,
+				2,
+			),
+		);
 	} else {
 		console.error(chalk.red("❌ Error:"));
 		if (error instanceof Error) {
@@ -50,10 +57,7 @@ program
 	.name("claude-usage")
 	.description("Track and analyze Claude Code usage with rate limit awareness")
 	.version("1.0.0")
-	.option(
-		"-c, --config <path>",
-		"Path to configuration file (YAML format)"
-	);
+	.option("-c, --config <path>", "Path to configuration file (YAML format)");
 
 program
 	.command("status")
@@ -179,9 +183,15 @@ program
 
 			if (entries.length === 0) {
 				if (options.json) {
-					console.log(JSON.stringify({
-						error: "No usage data found"
-					}, null, 2));
+					console.log(
+						JSON.stringify(
+							{
+								error: "No usage data found",
+							},
+							null,
+							2,
+						),
+					);
 				} else {
 					console.log(chalk.yellow("No usage data found."));
 				}
@@ -208,7 +218,7 @@ program
 			if (options.json) {
 				const jsonOutput = {
 					days: parseInt(options.days),
-					dailyUsage: Object.fromEntries(filteredUsage)
+					dailyUsage: Object.fromEntries(filteredUsage),
 				};
 				console.log(JSON.stringify(jsonOutput, null, 2));
 			} else {
@@ -403,14 +413,18 @@ program
 
 program
 	.command("predict")
-	.description("Predictive analytics: budget burn, anomalies, model suggestions")
+	.description(
+		"Predictive analytics: budget burn, anomalies, model suggestions",
+	)
 	.option("--json", "Output as JSON")
 	.action(async (options) => {
 		try {
 			const entries = await loadUsageData();
 			if (entries.length === 0) {
 				if (options.json) {
-					console.log(JSON.stringify({ error: "No usage data found" }, null, 2));
+					console.log(
+						JSON.stringify({ error: "No usage data found" }, null, 2),
+					);
 				} else {
 					console.log(chalk.yellow("No usage data found."));
 				}
@@ -423,34 +437,57 @@ program
 			const modelSuggestions = analyzer.generateModelSuggestions(entries);
 
 			if (options.json) {
-				console.log(JSON.stringify({
-					budgetPrediction,
-					anomalies,
-					modelSuggestions: modelSuggestions.slice(0, 5)
-				}, null, 2));
+				console.log(
+					JSON.stringify(
+						{
+							budgetPrediction,
+							anomalies,
+							modelSuggestions: modelSuggestions.slice(0, 5),
+						},
+						null,
+						2,
+					),
+				);
 			} else {
 				console.log(formatHeader("🔮 Predictive Analytics"));
-				
+
 				// Budget prediction
 				console.log(chalk.blue.bold("💰 Budget Prediction"));
-				console.log(`Current spend: ${chalk.green(`$${budgetPrediction.currentSpend.toFixed(2)}`)}`);
-				console.log(`Projected monthly: ${chalk.yellow(`$${budgetPrediction.projectedMonthlySpend.toFixed(2)}`)}`);
-				console.log(`Days until budget exhausted: ${budgetPrediction.daysUntilBudgetExhausted > 0 ? chalk.red(budgetPrediction.daysUntilBudgetExhausted) : chalk.green("N/A")}`);
-				console.log(`Trend: ${budgetPrediction.trendDirection === "increasing" ? chalk.red("📈") : budgetPrediction.trendDirection === "decreasing" ? chalk.green("📉") : "📊"} ${budgetPrediction.trendDirection}`);
-				console.log(`Confidence: ${chalk.cyan(`${(budgetPrediction.confidenceLevel * 100).toFixed(0)}%`)}\n`);
+				console.log(
+					`Current spend: ${chalk.green(`$${budgetPrediction.currentSpend.toFixed(2)}`)}`,
+				);
+				console.log(
+					`Projected monthly: ${chalk.yellow(`$${budgetPrediction.projectedMonthlySpend.toFixed(2)}`)}`,
+				);
+				console.log(
+					`Days until budget exhausted: ${budgetPrediction.daysUntilBudgetExhausted > 0 ? chalk.red(budgetPrediction.daysUntilBudgetExhausted) : chalk.green("N/A")}`,
+				);
+				console.log(
+					`Trend: ${budgetPrediction.trendDirection === "increasing" ? chalk.red("📈") : budgetPrediction.trendDirection === "decreasing" ? chalk.green("📉") : "📊"} ${budgetPrediction.trendDirection}`,
+				);
+				console.log(
+					`Confidence: ${chalk.cyan(`${(budgetPrediction.confidenceLevel * 100).toFixed(0)}%`)}\n`,
+				);
 
 				// Recommendations
 				if (budgetPrediction.recommendations.length > 0) {
 					console.log(chalk.yellow.bold("💡 Recommendations:"));
-					budgetPrediction.recommendations.forEach(rec => console.log(`  ${rec}`));
+					budgetPrediction.recommendations.forEach((rec) =>
+						console.log(`  ${rec}`),
+					);
 					console.log();
 				}
 
 				// Anomalies
 				if (anomalies.length > 0) {
 					console.log(chalk.red.bold("⚠️  Usage Anomalies"));
-					anomalies.forEach(anomaly => {
-						const severityIcon = anomaly.severity === "high" ? "🔴" : anomaly.severity === "medium" ? "🟡" : "🟢";
+					anomalies.forEach((anomaly) => {
+						const severityIcon =
+							anomaly.severity === "high"
+								? "🔴"
+								: anomaly.severity === "medium"
+									? "🟡"
+									: "🟢";
 						console.log(`${severityIcon} ${anomaly.description}`);
 					});
 					console.log();
@@ -459,11 +496,16 @@ program
 				// Model suggestions
 				if (modelSuggestions.length > 0) {
 					console.log(chalk.blue.bold("🎯 Model Optimization Suggestions"));
-					modelSuggestions.slice(0, 3).forEach(suggestion => {
-						const savingsText = suggestion.potentialSavings > 0 ? 
-							chalk.green(`+$${suggestion.potentialSavings.toFixed(3)}`) : 
-							chalk.red(`$${Math.abs(suggestion.potentialSavings).toFixed(3)}`);
-						console.log(`${suggestion.conversationContext}: ${suggestion.reasoning} (${savingsText})`);
+					modelSuggestions.slice(0, 3).forEach((suggestion) => {
+						const savingsText =
+							suggestion.potentialSavings > 0
+								? chalk.green(`+$${suggestion.potentialSavings.toFixed(3)}`)
+								: chalk.red(
+										`$${Math.abs(suggestion.potentialSavings).toFixed(3)}`,
+									);
+						console.log(
+							`${suggestion.conversationContext}: ${suggestion.reasoning} (${savingsText})`,
+						);
 					});
 				}
 			}
@@ -474,14 +516,18 @@ program
 
 program
 	.command("optimize")
-	.description("Cost optimization analytics: clustering, batch processing, model switching")
+	.description(
+		"Cost optimization analytics: clustering, batch processing, model switching",
+	)
 	.option("--json", "Output as JSON")
 	.action(async (options) => {
 		try {
 			const entries = await loadUsageData();
 			if (entries.length === 0) {
 				if (options.json) {
-					console.log(JSON.stringify({ error: "No usage data found" }, null, 2));
+					console.log(
+						JSON.stringify({ error: "No usage data found" }, null, 2),
+					);
 				} else {
 					console.log(chalk.yellow("No usage data found."));
 				}
@@ -491,35 +537,57 @@ program
 			const analyzer = new OptimizationAnalyzer();
 			const summary = analyzer.generateOptimizationSummary(entries);
 			const clusters = analyzer.clusterConversations(entries);
-			const batchOpportunities = analyzer.identifyBatchProcessingOpportunities(entries);
+			const batchOpportunities =
+				analyzer.identifyBatchProcessingOpportunities(entries);
 
 			if (options.json) {
-				console.log(JSON.stringify({
-					summary,
-					clusters: clusters.slice(0, 5),
-					batchOpportunities: batchOpportunities.opportunities.slice(0, 5)
-				}, null, 2));
+				console.log(
+					JSON.stringify(
+						{
+							summary,
+							clusters: clusters.slice(0, 5),
+							batchOpportunities: batchOpportunities.opportunities.slice(0, 5),
+						},
+						null,
+						2,
+					),
+				);
 			} else {
 				console.log(formatHeader("⚡ Optimization Analytics"));
-				
+
 				// Summary
-				console.log(chalk.green.bold(`💰 Total Potential Savings: $${summary.totalPotentialSavings.toFixed(2)}`));
-				console.log(`  • Batch Processing: ${chalk.cyan(`$${summary.batchProcessingSavings.toFixed(2)}`)}`);
-				console.log(`  • Model Switching: ${chalk.cyan(`$${summary.modelSwitchingSavings.toFixed(2)}`)}`);
-				console.log(`  • Efficiency Improvements: ${chalk.cyan(`$${summary.efficiencyImprovements.toFixed(2)}`)}\n`);
+				console.log(
+					chalk.green.bold(
+						`💰 Total Potential Savings: $${summary.totalPotentialSavings.toFixed(2)}`,
+					),
+				);
+				console.log(
+					`  • Batch Processing: ${chalk.cyan(`$${summary.batchProcessingSavings.toFixed(2)}`)}`,
+				);
+				console.log(
+					`  • Model Switching: ${chalk.cyan(`$${summary.modelSwitchingSavings.toFixed(2)}`)}`,
+				);
+				console.log(
+					`  • Efficiency Improvements: ${chalk.cyan(`$${summary.efficiencyImprovements.toFixed(2)}`)}\n`,
+				);
 
 				// Top recommendations
 				console.log(chalk.yellow.bold("🎯 Top Recommendations"));
 				summary.recommendations.forEach((rec, i) => {
-					const effortIcon = rec.effort === "low" ? "🟢" : rec.effort === "medium" ? "🟡" : "🔴";
-					console.log(`${i + 1}. ${rec.description} (${chalk.green(`$${rec.savings.toFixed(2)}`)} ${effortIcon})`);
+					const effortIcon =
+						rec.effort === "low" ? "🟢" : rec.effort === "medium" ? "🟡" : "🔴";
+					console.log(
+						`${i + 1}. ${rec.description} (${chalk.green(`$${rec.savings.toFixed(2)}`)} ${effortIcon})`,
+					);
 				});
 				console.log();
 
 				// Conversation clusters
 				console.log(chalk.blue.bold("📊 Conversation Clusters"));
-				clusters.slice(0, 3).forEach(cluster => {
-					console.log(`${cluster.type}: ${cluster.conversations.length} conversations, avg $${cluster.avgCost.toFixed(2)}, potential savings: $${cluster.optimizationPotential.toFixed(2)}`);
+				clusters.slice(0, 3).forEach((cluster) => {
+					console.log(
+						`${cluster.type}: ${cluster.conversations.length} conversations, avg $${cluster.avgCost.toFixed(2)}, potential savings: $${cluster.optimizationPotential.toFixed(2)}`,
+					);
 					if (cluster.recommendations.length > 0) {
 						console.log(`  💡 ${cluster.recommendations[0]}`);
 					}
@@ -532,14 +600,18 @@ program
 
 program
 	.command("patterns")
-	.description("Usage pattern analysis: conversation patterns, learning curves, task switching")
+	.description(
+		"Usage pattern analysis: conversation patterns, learning curves, task switching",
+	)
 	.option("--json", "Output as JSON")
 	.action(async (options) => {
 		try {
 			const entries = await loadUsageData();
 			if (entries.length === 0) {
 				if (options.json) {
-					console.log(JSON.stringify({ error: "No usage data found" }, null, 2));
+					console.log(
+						JSON.stringify({ error: "No usage data found" }, null, 2),
+					);
 				} else {
 					console.log(chalk.yellow("No usage data found."));
 				}
@@ -547,32 +619,47 @@ program
 			}
 
 			const analyzer = new PatternAnalyzer();
-			const lengthPatterns = analyzer.analyzeConversationLengthPatterns(entries);
+			const lengthPatterns =
+				analyzer.analyzeConversationLengthPatterns(entries);
 			const completionAnalysis = analyzer.analyzeTimeToCompletion(entries);
 			const switchingPatterns = analyzer.analyzeTaskSwitchingPatterns(entries);
 			const learningCurve = analyzer.analyzeLearningCurve(entries);
 			const usagePatterns = analyzer.identifyUsagePatterns(entries);
 
 			if (options.json) {
-				console.log(JSON.stringify({
-					lengthPatterns,
-					completionAnalysis,
-					switchingPatterns,
-					learningCurve,
-					usagePatterns
-				}, null, 2));
+				console.log(
+					JSON.stringify(
+						{
+							lengthPatterns,
+							completionAnalysis,
+							switchingPatterns,
+							learningCurve,
+							usagePatterns,
+						},
+						null,
+						2,
+					),
+				);
 			} else {
 				console.log(formatHeader("📈 Pattern Analysis"));
-				
+
 				// Conversation length patterns
 				console.log(chalk.blue.bold("💬 Conversation Length Patterns"));
-				console.log(`Quick Questions: ${lengthPatterns.conversationTypes.quickQuestions.count} conversations (avg ${lengthPatterns.avgLengthByType.quickQuestions} messages)`);
-				console.log(`Detailed Discussions: ${lengthPatterns.conversationTypes.detailedDiscussions.count} conversations (avg ${lengthPatterns.avgLengthByType.detailedDiscussions} messages)`);
-				console.log(`Deep Dives: ${lengthPatterns.conversationTypes.deepDives.count} conversations (avg ${lengthPatterns.avgLengthByType.deepDives} messages)`);
-				console.log(`Most Efficient: ${chalk.green(lengthPatterns.efficiencyInsights.mostEfficientType)}`);
+				console.log(
+					`Quick Questions: ${lengthPatterns.conversationTypes.quickQuestions.count} conversations (avg ${lengthPatterns.avgLengthByType.quickQuestions} messages)`,
+				);
+				console.log(
+					`Detailed Discussions: ${lengthPatterns.conversationTypes.detailedDiscussions.count} conversations (avg ${lengthPatterns.avgLengthByType.detailedDiscussions} messages)`,
+				);
+				console.log(
+					`Deep Dives: ${lengthPatterns.conversationTypes.deepDives.count} conversations (avg ${lengthPatterns.avgLengthByType.deepDives} messages)`,
+				);
+				console.log(
+					`Most Efficient: ${chalk.green(lengthPatterns.efficiencyInsights.mostEfficientType)}`,
+				);
 				if (lengthPatterns.recommendations?.length > 0) {
 					console.log(chalk.yellow("💡 Recommendations:"));
-					lengthPatterns.recommendations.forEach(rec => {
+					lengthPatterns.recommendations.forEach((rec) => {
 						console.log(`  • ${rec}`);
 					});
 				}
@@ -581,19 +668,33 @@ program
 				// Learning curve
 				console.log(chalk.green.bold("📚 Learning Progress"));
 				console.log(`Skill Area: ${learningCurve.skillArea}`);
-				console.log(`Learning Phase: ${chalk.cyan(learningCurve.learningPhase)}`);
-				console.log(`Improvement Rate: ${learningCurve.improvementRate > 0 ? chalk.green(`+${learningCurve.improvementRate.toFixed(1)}%/week`) : chalk.red(`${learningCurve.improvementRate.toFixed(1)}%/week`)}`);
-				console.log(`Current Efficiency: ${chalk.white(learningCurve.currentEfficiency.toFixed(0))} tokens/$`);
+				console.log(
+					`Learning Phase: ${chalk.cyan(learningCurve.learningPhase)}`,
+				);
+				console.log(
+					`Improvement Rate: ${learningCurve.improvementRate > 0 ? chalk.green(`+${learningCurve.improvementRate.toFixed(1)}%/week`) : chalk.red(`${learningCurve.improvementRate.toFixed(1)}%/week`)}`,
+				);
+				console.log(
+					`Current Efficiency: ${chalk.white(learningCurve.currentEfficiency.toFixed(0))} tokens/$`,
+				);
 				if (learningCurve.plateauDetected) {
 					console.log(chalk.yellow("⚠️  Learning plateau detected"));
 				}
-				console.log(`Next Milestone: ${chalk.cyan(learningCurve.nextMilestone)}\n`);
+				console.log(
+					`Next Milestone: ${chalk.cyan(learningCurve.nextMilestone)}\n`,
+				);
 
 				// Task switching
 				console.log(chalk.yellow.bold("🔄 Task Switching"));
-				console.log(`Switch Frequency: ${switchingPatterns.switchFrequency.toFixed(1)} switches/day`);
-				console.log(`Avg Time Between Switches: ${switchingPatterns.avgTimeBetweenSwitches.toFixed(0)} minutes`);
-				console.log(`Switching Cost: $${switchingPatterns.costOfSwitching.toFixed(2)}`);
+				console.log(
+					`Switch Frequency: ${switchingPatterns.switchFrequency.toFixed(1)} switches/day`,
+				);
+				console.log(
+					`Avg Time Between Switches: ${switchingPatterns.avgTimeBetweenSwitches.toFixed(0)} minutes`,
+				);
+				console.log(
+					`Switching Cost: $${switchingPatterns.costOfSwitching.toFixed(2)}`,
+				);
 				if (switchingPatterns.recommendations.length > 0) {
 					console.log(`💡 ${switchingPatterns.recommendations[0]}`);
 				}
@@ -602,9 +703,11 @@ program
 				// Usage patterns
 				if (usagePatterns.length > 0) {
 					console.log(chalk.magenta.bold("🎯 Usage Patterns"));
-					usagePatterns.slice(0, 3).forEach(pattern => {
+					usagePatterns.slice(0, 3).forEach((pattern) => {
 						const strengthBar = "█".repeat(Math.floor(pattern.strength * 10));
-						console.log(`${pattern.description} (${strengthBar} ${(pattern.strength * 100).toFixed(0)}%)`);
+						console.log(
+							`${pattern.description} (${strengthBar} ${(pattern.strength * 100).toFixed(0)}%)`,
+						);
 						if (pattern.recommendation) {
 							console.log(`  💡 ${pattern.recommendation}`);
 						}
@@ -618,14 +721,18 @@ program
 
 program
 	.command("research")
-	.description("Advanced research analytics: conversation success, project ROI, correlations")
+	.description(
+		"Advanced research analytics: conversation success, project ROI, correlations",
+	)
 	.option("--json", "Output as JSON")
 	.action(async (options) => {
 		try {
 			const entries = await loadUsageData();
 			if (entries.length === 0) {
 				if (options.json) {
-					console.log(JSON.stringify({ error: "No usage data found" }, null, 2));
+					console.log(
+						JSON.stringify({ error: "No usage data found" }, null, 2),
+					);
 				} else {
 					console.log(chalk.yellow("No usage data found."));
 				}
@@ -636,29 +743,39 @@ program
 			const insights = analyzer.generateAdvancedInsights(entries);
 
 			if (options.json) {
-				console.log(JSON.stringify({
-					conversationSuccess: insights.conversationSuccess.slice(0, 10),
-					projectAnalysis: insights.projectAnalysis.slice(0, 5),
-					timeSeriesData: insights.timeSeriesData.slice(-30), // Last 30 days
-					cacheOptimization: insights.cacheOptimization,
-					promptingPatterns: insights.promptingPatterns,
-					correlationInsights: insights.correlationInsights
-				}, null, 2));
+				console.log(
+					JSON.stringify(
+						{
+							conversationSuccess: insights.conversationSuccess.slice(0, 10),
+							projectAnalysis: insights.projectAnalysis.slice(0, 5),
+							timeSeriesData: insights.timeSeriesData.slice(-30), // Last 30 days
+							cacheOptimization: insights.cacheOptimization,
+							promptingPatterns: insights.promptingPatterns,
+							correlationInsights: insights.correlationInsights,
+						},
+						null,
+						2,
+					),
+				);
 			} else {
 				console.log(formatHeader("🔬 Research Analytics"));
-				
+
 				// Top performing conversations
 				console.log(chalk.blue.bold("🏆 Top Performing Conversations"));
 				insights.conversationSuccess.slice(0, 5).forEach((conv, i) => {
-					console.log(`${i + 1}. Success: ${(conv.successScore * 100).toFixed(1)}% | Efficiency: ${conv.efficiency.toFixed(0)} tokens/$ | ${conv.messageCount} msgs | ${conv.duration.toFixed(0)}min`);
+					console.log(
+						`${i + 1}. Success: ${(conv.successScore * 100).toFixed(1)}% | Efficiency: ${conv.efficiency.toFixed(0)} tokens/$ | ${conv.messageCount} msgs | ${conv.duration.toFixed(0)}min`,
+					);
 				});
 				console.log();
 
 				// Project ROI analysis
 				if (insights.projectAnalysis.length > 0) {
 					console.log(chalk.green.bold("📊 Project ROI Analysis"));
-					insights.projectAnalysis.slice(0, 3).forEach(project => {
-						console.log(`${project.projectPath}: ROI ${project.roi.toFixed(2)} | $${project.totalCost.toFixed(2)} | ${project.conversationCount} conversations | ${project.timeSpent.toFixed(1)}hrs`);
+					insights.projectAnalysis.slice(0, 3).forEach((project) => {
+						console.log(
+							`${project.projectPath}: ROI ${project.roi.toFixed(2)} | $${project.totalCost.toFixed(2)} | ${project.conversationCount} conversations | ${project.timeSpent.toFixed(1)}hrs`,
+						);
 						if (project.topics.length > 0) {
 							console.log(`  Topics: ${project.topics.join(", ")}`);
 						}
@@ -668,36 +785,172 @@ program
 
 				// Cache optimization
 				console.log(chalk.cyan.bold("💾 Cache Optimization"));
-				console.log(`Cache hit rate: ${(insights.cacheOptimization.cacheHitRate * 100).toFixed(1)}%`);
-				console.log(`Cache savings: $${insights.cacheOptimization.cacheSavings.toFixed(2)}`);
+				console.log(
+					`Cache hit rate: ${(insights.cacheOptimization.cacheHitRate * 100).toFixed(1)}%`,
+				);
+				console.log(
+					`Cache savings: $${insights.cacheOptimization.cacheSavings.toFixed(2)}`,
+				);
 				if (insights.cacheOptimization.underutilizedConversations.length > 0) {
-					console.log(`Underutilized conversations: ${insights.cacheOptimization.underutilizedConversations.length}`);
-					const topMissed = insights.cacheOptimization.underutilizedConversations[0];
-					console.log(`  Top opportunity: $${topMissed.missedCachingOpportunity.toFixed(2)} potential savings`);
+					console.log(
+						`Underutilized conversations: ${insights.cacheOptimization.underutilizedConversations.length}`,
+					);
+					const topMissed =
+						insights.cacheOptimization.underutilizedConversations[0];
+					console.log(
+						`  Top opportunity: $${topMissed.missedCachingOpportunity.toFixed(2)} potential savings`,
+					);
 				}
-				insights.cacheOptimization.recommendations.forEach(rec => console.log(`  💡 ${rec}`));
+				insights.cacheOptimization.recommendations.forEach((rec) =>
+					console.log(`  💡 ${rec}`),
+				);
 				console.log();
 
 				// Prompting patterns
 				console.log(chalk.magenta.bold("📝 Prompting Insights"));
-				console.log(`Average prompt length: ${insights.promptingPatterns.avgPromptLength.toFixed(0)} tokens`);
+				console.log(
+					`Average prompt length: ${insights.promptingPatterns.avgPromptLength.toFixed(0)} tokens`,
+				);
 				if (insights.promptingPatterns.effectivePromptPatterns.length > 0) {
 					const best = insights.promptingPatterns.effectivePromptPatterns[0];
-					console.log(`Most effective pattern: ${best.pattern} prompts (${(best.successRate * 100).toFixed(1)}% success rate)`);
+					console.log(
+						`Most effective pattern: ${best.pattern} prompts (${(best.successRate * 100).toFixed(1)}% success rate)`,
+					);
 				}
-				insights.promptingPatterns.optimalPromptingGuidelines.slice(0, 3).forEach(guideline => {
-					console.log(`  💡 ${guideline}`);
-				});
+				insights.promptingPatterns.optimalPromptingGuidelines
+					.slice(0, 3)
+					.forEach((guideline) => {
+						console.log(`  💡 ${guideline}`);
+					});
 				console.log();
 
 				// Correlation insights
 				if (insights.correlationInsights.length > 0) {
 					console.log(chalk.yellow.bold("🔗 Key Correlations"));
-					insights.correlationInsights.forEach(insight => {
+					insights.correlationInsights.forEach((insight) => {
 						const strength = Math.abs(insight.correlation);
-						const strengthText = strength > 0.5 ? "Strong" : strength > 0.3 ? "Moderate" : "Weak";
-						console.log(`${strengthText} correlation (${insight.correlation.toFixed(2)}): ${insight.insight}`);
+						const strengthText =
+							strength > 0.5 ? "Strong" : strength > 0.3 ? "Moderate" : "Weak";
+						console.log(
+							`${strengthText} correlation (${insight.correlation.toFixed(2)}): ${insight.insight}`,
+						);
 					});
+				}
+			}
+		} catch (error) {
+			handleError(error, options.json);
+		}
+	});
+
+program
+	.command("length")
+	.description(
+		"Analyze conversation length patterns and optimization opportunities",
+	)
+	.option("--json", "Output as JSON")
+	.action(async (options) => {
+		try {
+			const entries = await loadUsageData();
+			if (entries.length === 0) {
+				if (options.json) {
+					console.log(
+						JSON.stringify({ error: "No usage data found" }, null, 2),
+					);
+				} else {
+					console.log(chalk.yellow("No usage data found."));
+				}
+				return;
+			}
+
+			const analyzer = new ConversationLengthAnalyzer();
+			analyzer.loadConversations(entries);
+			const analysis = analyzer.analyzeConversationLengths();
+
+			if (options.json) {
+				console.log(JSON.stringify(analysis, null, 2));
+			} else {
+				console.log(formatHeader("📏 Conversation Length Analysis"));
+
+				// Overview
+				console.log(chalk.blue.bold("📊 Overview"));
+				console.log(
+					`Total conversations: ${chalk.green(analysis.totalConversations)}`,
+				);
+				console.log(
+					`Optimal range: ${chalk.cyan(`${analysis.overallOptimalRange.minMessages}-${analysis.overallOptimalRange.maxMessages} messages`)}`,
+				);
+				console.log(`${analysis.overallOptimalRange.explanation}\n`);
+
+				// Length distribution
+				console.log(chalk.blue.bold("📈 Length Distribution"));
+				const dist = analysis.lengthDistribution;
+				console.log(
+					`Quick (1-5 msgs): ${(dist.quick * 100).toFixed(1)}% (${Math.round(dist.quick * analysis.totalConversations)} conversations)`,
+				);
+				console.log(
+					`Medium (6-20 msgs): ${(dist.medium * 100).toFixed(1)}% (${Math.round(dist.medium * analysis.totalConversations)} conversations)`,
+				);
+				console.log(
+					`Deep (21-100 msgs): ${(dist.deep * 100).toFixed(1)}% (${Math.round(dist.deep * analysis.totalConversations)} conversations)`,
+				);
+				console.log(
+					`Marathon (100+ msgs): ${(dist.marathon * 100).toFixed(1)}% (${Math.round(dist.marathon * analysis.totalConversations)} conversations)\n`,
+				);
+
+				// Project profiles
+				if (analysis.projectProfiles.length > 0) {
+					console.log(chalk.blue.bold("🏗️ Project Profiles"));
+					analysis.projectProfiles.slice(0, 5).forEach((project) => {
+						console.log(chalk.green.bold(`\n${project.project}:`));
+						console.log(`  Conversations: ${project.totalConversations}`);
+						console.log(
+							`  Avg length: ${project.avgMessageCount.toFixed(1)} messages`,
+						);
+						console.log(
+							`  Optimal range: ${project.optimalRange.minMessages}-${project.optimalRange.maxMessages} messages`,
+						);
+						console.log(`  ${project.optimalRange.explanation}`);
+
+						// Efficiency by length
+						const eff = project.efficiencyByLength;
+						console.log(`  Efficiency by length:`);
+						if (eff.quick.count > 0)
+							console.log(
+								`    Quick: ${eff.quick.successRate.toFixed(1)}% success rate`,
+							);
+						if (eff.medium.count > 0)
+							console.log(
+								`    Medium: ${eff.medium.successRate.toFixed(1)}% success rate`,
+							);
+						if (eff.deep.count > 0)
+							console.log(
+								`    Deep: ${eff.deep.successRate.toFixed(1)}% success rate`,
+							);
+						if (eff.marathon.count > 0)
+							console.log(
+								`    Marathon: ${eff.marathon.successRate.toFixed(1)}% success rate`,
+							);
+
+						// Project recommendations
+						if (project.recommendations.length > 0) {
+							console.log(`  ${chalk.yellow("💡 Recommendations:")}`);
+							project.recommendations.forEach((rec) =>
+								console.log(`    • ${rec}`),
+							);
+						}
+					});
+				}
+
+				// Overall insights
+				if (analysis.insights.length > 0) {
+					console.log(chalk.blue.bold("\n🔍 Key Insights"));
+					analysis.insights.forEach((insight) => console.log(`• ${insight}`));
+				}
+
+				// Recommendations
+				if (analysis.recommendations.length > 0) {
+					console.log(chalk.yellow.bold("\n💡 Recommendations"));
+					analysis.recommendations.forEach((rec) => console.log(`• ${rec}`));
 				}
 			}
 		} catch (error) {

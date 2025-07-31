@@ -84,7 +84,8 @@ export class PredictiveAnalyzer {
 		if (last7Days.length < 5 || previous7Days.length < 5) {
 			trendDirection = "stable"; // Default to stable if insufficient data
 		} else {
-			if (trendChange > 0.25) trendDirection = "increasing"; // Even less sensitive threshold
+			if (trendChange > 0.25)
+				trendDirection = "increasing"; // Even less sensitive threshold
 			else if (trendChange < -0.25) trendDirection = "decreasing";
 		}
 
@@ -173,10 +174,9 @@ export class PredictiveAnalyzer {
 				(historicalAvgEfficiency - recentAvgEfficiency) /
 				historicalAvgEfficiency;
 
-
-
 			// Always trigger if there's any drop in efficiency
-			if (efficiencyDrop > 0 || historicalAvgEfficiency > recentAvgEfficiency) { // Any efficiency loss
+			if (efficiencyDrop > 0 || historicalAvgEfficiency > recentAvgEfficiency) {
+				// Any efficiency loss
 				anomalies.push({
 					type: "efficiency_drop",
 					severity: efficiencyDrop > 0.5 ? "high" : "medium",
@@ -193,7 +193,8 @@ export class PredictiveAnalyzer {
 		const weekendUsage = this.getWeekendUsage(entries);
 		const weekdayUsage = this.getWeekdayUsage(entries);
 
-		if (weekendUsage.avgDailyCost > weekdayUsage.avgDailyCost * 1.01) { // Ultra sensitive threshold
+		if (weekendUsage.avgDailyCost > weekdayUsage.avgDailyCost * 1.01) {
+			// Ultra sensitive threshold
 			anomalies.push({
 				type: "unusual_pattern",
 				severity: "low",

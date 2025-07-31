@@ -27,19 +27,28 @@ describe("Performance Tests", () => {
 	describe("Large Dataset Performance", () => {
 		it("should handle 10K entries efficiently", () => {
 			// Generate 10K entries across 100 conversations
-			const largeDataset: UsageEntry[] = Array.from({ length: 10000 }, (_, i) => {
-				const conversationId = `conv-${Math.floor(i / 100)}`;
-				const timestamp = new Date(Date.now() - (10000 - i) * 60000).toISOString(); // 1 minute apart
-				
-				return createMockEntry({
-					conversationId,
-					timestamp,
-					model: i % 3 === 0 ? "claude-opus-4-20250514" : "claude-3.5-sonnet-20241022",
-					prompt_tokens: 800 + Math.floor(Math.random() * 400),
-					completion_tokens: 1500 + Math.floor(Math.random() * 1000),
-					cache_read_input_tokens: i % 4 === 0 ? 200 + Math.floor(Math.random() * 100) : 0,
-				});
-			});
+			const largeDataset: UsageEntry[] = Array.from(
+				{ length: 10000 },
+				(_, i) => {
+					const conversationId = `conv-${Math.floor(i / 100)}`;
+					const timestamp = new Date(
+						Date.now() - (10000 - i) * 60000,
+					).toISOString(); // 1 minute apart
+
+					return createMockEntry({
+						conversationId,
+						timestamp,
+						model:
+							i % 3 === 0
+								? "claude-opus-4-20250514"
+								: "claude-3.5-sonnet-20241022",
+						prompt_tokens: 800 + Math.floor(Math.random() * 400),
+						completion_tokens: 1500 + Math.floor(Math.random() * 1000),
+						cache_read_input_tokens:
+							i % 4 === 0 ? 200 + Math.floor(Math.random() * 100) : 0,
+					});
+				},
+			);
 
 			const start = Date.now();
 
@@ -50,9 +59,11 @@ describe("Performance Tests", () => {
 				anomalies: predictiveAnalyzer.detectUsageAnomalies(largeDataset),
 				suggestions: predictiveAnalyzer.generateModelSuggestions(largeDataset),
 			};
-			const optimization = optimizationAnalyzer.generateOptimizationSummary(largeDataset);
+			const optimization =
+				optimizationAnalyzer.generateOptimizationSummary(largeDataset);
 			const patterns = {
-				lengthPatterns: patternAnalyzer.analyzeConversationLengthPatterns(largeDataset),
+				lengthPatterns:
+					patternAnalyzer.analyzeConversationLengthPatterns(largeDataset),
 				completion: patternAnalyzer.analyzeTimeToCompletion(largeDataset),
 				switching: patternAnalyzer.analyzeTaskSwitchingPatterns(largeDataset),
 				learning: patternAnalyzer.analyzeLearningCurve(largeDataset),
@@ -78,16 +89,18 @@ describe("Performance Tests", () => {
 			const initialMemory = process.memoryUsage().heapUsed;
 
 			// Create 50K entries
-			const massiveDataset: UsageEntry[] = Array.from({ length: 50000 }, (_, i) =>
-				createMockEntry({
-					conversationId: `conv-${Math.floor(i / 500)}`, // 100 conversations
-					timestamp: new Date(Date.now() - (50000 - i) * 30000).toISOString(),
-				})
+			const massiveDataset: UsageEntry[] = Array.from(
+				{ length: 50000 },
+				(_, i) =>
+					createMockEntry({
+						conversationId: `conv-${Math.floor(i / 500)}`, // 100 conversations
+						timestamp: new Date(Date.now() - (50000 - i) * 30000).toISOString(),
+					}),
 			);
 
 			// Run analysis
 			const result = researchAnalyzer.generateAdvancedInsights(massiveDataset);
-			
+
 			const finalMemory = process.memoryUsage().heapUsed;
 			const memoryIncrease = (finalMemory - initialMemory) / 1024 / 1024; // MB
 
@@ -95,7 +108,9 @@ describe("Performance Tests", () => {
 			expect(memoryIncrease).toBeLessThan(500);
 			expect(result.conversationSuccess.length).toBeGreaterThan(0);
 
-			console.log(`✅ Memory increase: ${memoryIncrease.toFixed(1)}MB for 50K entries`);
+			console.log(
+				`✅ Memory increase: ${memoryIncrease.toFixed(1)}MB for 50K entries`,
+			);
 		});
 	});
 
@@ -137,7 +152,7 @@ describe("Performance Tests", () => {
 				createMockEntry({
 					conversationId: "rapid-conv",
 					timestamp: new Date(Date.now() + i).toISOString(), // 1ms apart
-				})
+				}),
 			);
 
 			const start = Date.now();
@@ -149,17 +164,20 @@ describe("Performance Tests", () => {
 		});
 
 		it("should handle very long conversations", () => {
-			const longConversation: UsageEntry[] = Array.from({ length: 5000 }, (_, i) =>
-				createMockEntry({
-					conversationId: "ultra-long-conv",
-					timestamp: new Date(Date.now() + i * 60000).toISOString(), // 1 minute apart
-					prompt_tokens: 1000 + i,
-					completion_tokens: 2000 + i * 2,
-				})
+			const longConversation: UsageEntry[] = Array.from(
+				{ length: 5000 },
+				(_, i) =>
+					createMockEntry({
+						conversationId: "ultra-long-conv",
+						timestamp: new Date(Date.now() + i * 60000).toISOString(), // 1 minute apart
+						prompt_tokens: 1000 + i,
+						completion_tokens: 2000 + i * 2,
+					}),
 			);
 
 			expect(() => {
-				const result = patternAnalyzer.analyzeConversationLengthPatterns(longConversation);
+				const result =
+					patternAnalyzer.analyzeConversationLengthPatterns(longConversation);
 				expect(result.conversationTypes).toBeDefined();
 			}).not.toThrow();
 		});
@@ -175,7 +193,7 @@ describe("Performance Tests", () => {
 					createMockEntry({
 						conversationId: `conv-${Math.floor(i / 10)}`,
 						timestamp: new Date(Date.now() - (size - i) * 60000).toISOString(),
-					})
+					}),
 				);
 
 				const start = Date.now();
@@ -188,11 +206,13 @@ describe("Performance Tests", () => {
 			// Allow some variance but expect roughly linear scaling
 			const ratio1 = times[1] / times[0]; // 2x data
 			const ratio2 = times[2] / times[1]; // 2x data again
-			
+
 			expect(ratio1).toBeLessThan(5); // Should not be 5x slower for 2x data
 			expect(ratio2).toBeLessThan(5);
 
-			console.log(`✅ Scaling ratios: ${ratio1.toFixed(2)}x, ${ratio2.toFixed(2)}x`);
+			console.log(
+				`✅ Scaling ratios: ${ratio1.toFixed(2)}x, ${ratio2.toFixed(2)}x`,
+			);
 		});
 
 		it("should handle concurrent analysis efficiently", async () => {
@@ -200,7 +220,7 @@ describe("Performance Tests", () => {
 				createMockEntry({
 					conversationId: `concurrent-conv-${Math.floor(i / 50)}`,
 					timestamp: new Date(Date.now() - i * 60000).toISOString(),
-				})
+				}),
 			);
 
 			const start = Date.now();
@@ -209,7 +229,9 @@ describe("Performance Tests", () => {
 			const results = await Promise.all([
 				Promise.resolve(researchAnalyzer.generateAdvancedInsights(dataset)),
 				Promise.resolve(predictiveAnalyzer.predictBudgetBurn(dataset)),
-				Promise.resolve(optimizationAnalyzer.generateOptimizationSummary(dataset)),
+				Promise.resolve(
+					optimizationAnalyzer.generateOptimizationSummary(dataset),
+				),
 				Promise.resolve(patternAnalyzer.identifyUsagePatterns(dataset)),
 			]);
 
@@ -234,41 +256,49 @@ describe("Performance Tests", () => {
 			const models = ["claude-opus-4-20250514", "claude-3.5-sonnet-20241022"];
 
 			for (let day = 0; day < 180; day++) {
-				const currentDate = new Date(startDate.getTime() + day * 24 * 60 * 60 * 1000);
-				
+				const currentDate = new Date(
+					startDate.getTime() + day * 24 * 60 * 60 * 1000,
+				);
+
 				// Simulate 3-10 conversations per day with varying intensity
 				const conversationsToday = 3 + Math.floor(Math.random() * 8);
-				
+
 				for (let conv = 0; conv < conversationsToday; conv++) {
 					const project = projects[Math.floor(Math.random() * projects.length)];
 					const model = models[Math.floor(Math.random() * models.length)];
 					const messageCount = 2 + Math.floor(Math.random() * 30); // 2-32 messages per conversation
-					
+
 					for (let msg = 0; msg < messageCount; msg++) {
 						const timestamp = new Date(
-							currentDate.getTime() + 
-							conv * 60 * 60 * 1000 + // Hour spacing between conversations
-							msg * 5 * 60 * 1000 // 5 minutes between messages
+							currentDate.getTime() +
+								conv * 60 * 60 * 1000 + // Hour spacing between conversations
+								msg * 5 * 60 * 1000, // 5 minutes between messages
 						);
 
-						sixMonthsData.push(createMockEntry({
-							conversationId: `${project}-${day}-${conv}`,
-							timestamp: timestamp.toISOString(),
-							model,
-							prompt_tokens: model.includes("opus") ? 
-								1000 + Math.floor(Math.random() * 2000) : 
-								800 + Math.floor(Math.random() * 1200),
-							completion_tokens: model.includes("opus") ? 
-								2000 + Math.floor(Math.random() * 3000) : 
-								1500 + Math.floor(Math.random() * 2500),
-							cache_read_input_tokens: Math.random() > 0.7 ? 
-								100 + Math.floor(Math.random() * 300) : 0,
-						}));
+						sixMonthsData.push(
+							createMockEntry({
+								conversationId: `${project}-${day}-${conv}`,
+								timestamp: timestamp.toISOString(),
+								model,
+								prompt_tokens: model.includes("opus")
+									? 1000 + Math.floor(Math.random() * 2000)
+									: 800 + Math.floor(Math.random() * 1200),
+								completion_tokens: model.includes("opus")
+									? 2000 + Math.floor(Math.random() * 3000)
+									: 1500 + Math.floor(Math.random() * 2500),
+								cache_read_input_tokens:
+									Math.random() > 0.7
+										? 100 + Math.floor(Math.random() * 300)
+										: 0,
+							}),
+						);
 					}
 				}
 			}
 
-			console.log(`Generated ${sixMonthsData.length} entries simulating 6 months of usage`);
+			console.log(
+				`Generated ${sixMonthsData.length} entries simulating 6 months of usage`,
+			);
 
 			const start = Date.now();
 			const insights = researchAnalyzer.generateAdvancedInsights(sixMonthsData);
@@ -285,10 +315,18 @@ describe("Performance Tests", () => {
 			expect(duration).toBeLessThan(15000); // 15 seconds for 6 months of data
 
 			console.log(`✅ Realistic simulation completed in ${duration}ms`);
-			console.log(`   - ${insights.conversationSuccess.length} conversations analyzed`);
-			console.log(`   - ${insights.projectAnalysis.length} projects identified`);
-			console.log(`   - ${insights.timeSeriesData.length} days of time series data`);
-			console.log(`   - ${(insights.cacheOptimization.cacheHitRate * 100).toFixed(1)}% cache hit rate`);
+			console.log(
+				`   - ${insights.conversationSuccess.length} conversations analyzed`,
+			);
+			console.log(
+				`   - ${insights.projectAnalysis.length} projects identified`,
+			);
+			console.log(
+				`   - ${insights.timeSeriesData.length} days of time series data`,
+			);
+			console.log(
+				`   - ${(insights.cacheOptimization.cacheHitRate * 100).toFixed(1)}% cache hit rate`,
+			);
 		});
 	});
 });
