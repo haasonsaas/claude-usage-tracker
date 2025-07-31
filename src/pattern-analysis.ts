@@ -310,6 +310,17 @@ export class PatternAnalyzer {
 			.sort((a, b) => b.frequency - a.frequency)
 			.slice(0, 5);
 
+		// Handle case with insufficient data
+		if (sortedConversations.length < 2) {
+			return {
+				switchFrequency: 0,
+				avgTimeBetweenSwitches: 0,
+				costOfSwitching: 0,
+				mostCommonTransitions: [],
+				recommendations: ["Need more conversation data to analyze task switching patterns"],
+			};
+		}
+
 		const totalDays = Math.max(
 			1,
 			(sortedConversations[sortedConversations.length - 1].startTime.getTime() -
@@ -977,86 +988,7 @@ export class PatternAnalyzer {
 		};
 	}
 
-	analyzeTaskSwitchingPatterns(entries: UsageEntry[]) {
-		const conversations = this.groupByConversation(entries);
-		
-		// Analyze switching patterns
-		const conversationTimestamps = Array.from(conversations.entries())
-			.map(([id, convEntries]) => ({
-				id,
-				startTime: new Date(convEntries[0].timestamp).getTime(),
-				endTime: new Date(convEntries[convEntries.length - 1].timestamp).getTime(),
-				type: this.classifyTaskType(convEntries)
-			}))
-			.sort((a, b) => a.startTime - b.startTime);
-		
-		// Calculate switching metrics
-		let totalSwitches = 0;
-		let totalTimeBetweenSwitches = 0;
-		let rapidSwitchingPeriods = 0;
-		
-		for (let i = 1; i < conversationTimestamps.length; i++) {
-			const current = conversationTimestamps[i];
-			const previous = conversationTimestamps[i - 1];
-			
-			if (current.type !== previous.type) {
-				totalSwitches++;
-				const timeBetween = current.startTime - previous.endTime;
-				totalTimeBetweenSwitches += timeBetween;
-				
-				// Rapid switching: less than 30 minutes
-				if (timeBetween < 30 * 60 * 1000) {
-					rapidSwitchingPeriods++;
-				}
-			}
-		}
-		
-		const avgTimeBetweenSwitches = totalSwitches > 0 ? totalTimeBetweenSwitches / totalSwitches / (60 * 1000) : 0; // minutes
-		
-		// Analyze task clusters
-		const taskClusters = this.groupTasksByType(conversationTimestamps);
-		
-		// Calculate efficiency metrics
-		const avgTaskCompletionTime = conversationTimestamps.reduce((sum, conv) => 
-			sum + (conv.endTime - conv.startTime), 0) / conversationTimestamps.length / (60 * 1000); // minutes
-		
-		const multitaskingEfficiency = totalSwitches > 0 ? 
-			Math.max(0, 1 - (rapidSwitchingPeriods / totalSwitches)) : 1;
-		
-		const focusedSessionDuration = this.calculateLongestFocusedSession(conversationTimestamps);
-		const optimalBatchSize = Math.ceil(Math.sqrt(conversations.size));
-		
-		// Generate recommendations
-		const recommendations = [];
-		if (rapidSwitchingPeriods > totalSwitches * 0.5) {
-			recommendations.push('Consider batching similar tasks to reduce context switching');
-		}
-		if (focusedSessionDuration > 2 * 60) { // 2 hours
-			recommendations.push('Good focused work sessions detected');
-		}
-		if (totalSwitches / conversationTimestamps.length > 0.3) {
-			recommendations.push('High task switching - consider dedicated time blocks');
-		}
-		if (recommendations.length === 0) {
-			recommendations.push('Well-balanced task switching patterns');
-		}
-		
-		return {
-			switchingMetrics: {
-				totalSwitches,
-				avgTimeBetweenSwitches,
-				rapidSwitchingPeriods
-			},
-			taskClusters,
-			efficiency: {
-				avgTaskCompletionTime,
-				multitaskingEfficiency,
-				focusedSessionDuration,
-				optimalBatchSize
-			},
-			recommendations
-		};
-	}
+
 
 	private groupByConversation(entries: UsageEntry[]): Map<string, UsageEntry[]> {
 		const conversations = new Map<string, UsageEntry[]>();
