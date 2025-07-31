@@ -15,7 +15,11 @@
       "Bash(git tag:*)",
       "Bash(gh repo edit:*)",
       "Bash(timeout:*)",
-      "Bash(true)"
+      "Bash(true)",
+      "Bash(npm run analyze:*)",
+      "Bash(npm run start:*)",
+      "Bash(rm:*)",
+      "Bash(git restore:*)"
     ],
     "deny": []
   }

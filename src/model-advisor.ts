@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import { MODEL_PRICING } from './config.js';
+import { TASK_MODEL_MAPPING } from './recommendation-config.js';
 
 export interface TaskClassification {
   taskType: 
@@ -16,12 +17,12 @@ export interface TaskClassification {
 }
 
 export interface ModelRecommendation {
-  recommendedModel: 'sonnet' | 'opus';
+  recommendedModel: keyof typeof MODEL_PRICING;
   confidence: number;
   costSavings?: number;
   reasoning: string;
   alternativeModel?: {
-    model: 'sonnet' | 'opus';
+    model: keyof typeof MODEL_PRICING;
     tradeoffs: string;
   };
 }
@@ -96,16 +97,7 @@ export class ModelAdvisor {
     ],
   };
 
-  private modelRecommendations = {
-    code_generation: { model: 'sonnet' as const, confidence: 0.8 },
-    debugging: { model: 'opus' as const, confidence: 0.7 },
-    code_review: { model: 'sonnet' as const, confidence: 0.75 },
-    documentation: { model: 'sonnet' as const, confidence: 0.9 },
-    architecture: { model: 'opus' as const, confidence: 0.8 },
-    complex_analysis: { model: 'opus' as const, confidence: 0.9 },
-    simple_query: { model: 'sonnet' as const, confidence: 0.95 },
-    refactoring: { model: 'sonnet' as const, confidence: 0.8 },
-  };
+  private modelRecommendations = TASK_MODEL_MAPPING;
 
   classifyTask(prompt: string): TaskClassification {
     let bestMatch: TaskClassification = {
@@ -165,23 +157,24 @@ export class ModelAdvisor {
 
   getModelRecommendation(classification: TaskClassification): ModelRecommendation {
     const baseRec = this.modelRecommendations[classification.taskType];
-    const sonnetPricing = MODEL_PRICING['claude-sonnet-4-20250514'];
-    const opusPricing = MODEL_PRICING['claude-opus-4-20250514'];
+    const recommendedModelPricing = MODEL_PRICING[baseRec.model];
+
+    const alternativeModel = Object.keys(MODEL_PRICING).find(m => m !== baseRec.model) as keyof typeof MODEL_PRICING;
+    const alternativeModelPricing = MODEL_PRICING[alternativeModel];
 
     // Estimate token usage (rough approximation)
     const estimatedTokens = this.estimateTokenUsage(classification.taskType);
     
-    const sonnetCost = (estimatedTokens.input / 1_000_000) * sonnetPricing.input + 
-                      (estimatedTokens.output / 1_000_000) * sonnetPricing.output;
-    const opusCost = (estimatedTokens.input / 1_000_000) * opusPricing.input + 
-                    (estimatedTokens.output / 1_000_000) * opusPricing.output;
+    const recommendedModelCost = (estimatedTokens.input / 1_000_000) * recommendedModelPricing.input + 
+                      (estimatedTokens.output / 1_000_000) * recommendedModelPricing.output;
+    const alternativeModelCost = (estimatedTokens.input / 1_000_000) * alternativeModelPricing.input + 
+                    (estimatedTokens.output / 1_000_000) * alternativeModelPricing.output;
 
-    const costSavings = baseRec.model === 'sonnet' ? (opusCost - sonnetCost) : 0;
+    const costSavings = alternativeModelCost - recommendedModelCost;
 
     let reasoning = this.getReasoningForTask(classification.taskType, baseRec.model);
     
     // Alternative model suggestion
-    const alternativeModel = baseRec.model === 'sonnet' ? 'opus' : 'sonnet';
     const alternativeTradeoffs = this.getAlternativeTradeoffs(classification.taskType, alternativeModel);
 
     return {
@@ -211,7 +204,7 @@ export class ModelAdvisor {
     return estimates[taskType] || estimates.simple_query;
   }
 
-  private getReasoningForTask(taskType: TaskClassification['taskType'], model: 'sonnet' | 'opus'): string {
+  private getReasoningForTask(taskType: TaskClassification['taskType'], model: keyof typeof MODEL_PRICING): string {
     const reasons = {
       code_generation: {
         sonnet: 'Sonnet 4 excels at code generation with 78% cost savings. Quality is excellent for most coding tasks.',
@@ -251,7 +244,7 @@ export class ModelAdvisor {
     return taskReasons ? taskReasons[model] : `${model === 'sonnet' ? 'Sonnet 4 for cost efficiency' : 'Opus 4 for maximum capability'}`;
   }
 
-  private getAlternativeTradeoffs(_taskType: TaskClassification['taskType'], alternativeModel: 'sonnet' | 'opus'): string {
+  private getAlternativeTradeoffs(_taskType: TaskClassification['taskType'], alternativeModel: keyof typeof MODEL_PRICING): string {
     if (alternativeModel === 'opus') {
       return 'Higher cost but maximum reasoning capability and nuance detection';
     } else {
@@ -271,7 +264,7 @@ export class ModelAdvisor {
     output += chalk.gray(`Reasoning: ${classification.reasoning}\n\n`);
     
     // Recommendation
-    const modelName = recommendation.recommendedModel === 'sonnet' ? 'Sonnet 4' : 'Opus 4';
+    const modelName = recommendation.recommendedModel;
     const confidenceColor = recommendation.confidence > 0.8 ? chalk.green : 
                           recommendation.confidence > 0.6 ? chalk.yellow : chalk.red;
     
@@ -286,9 +279,9 @@ export class ModelAdvisor {
     
     // Alternative
     if (recommendation.alternativeModel) {
-      const altName = recommendation.alternativeModel.model === 'sonnet' ? 'Sonnet 4' : 'Opus 4';
-      output += chalk.yellow(`⚡ Alternative: ${altName}\n`);
-      output += chalk.gray(`${recommendation.alternativeModel.tradeoffs}\n`);
+      const altName = recommendation.alternativeModel.model;
+      output += chalk.yellow("⚡ Alternative: " + altName + "\n");
+      output += chalk.gray("" + recommendation.alternativeModel.tradeoffs + "\n");
     }
     
     return output;
