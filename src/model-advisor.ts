@@ -176,7 +176,8 @@ export class ModelAdvisor {
 			(estimatedTokens.input / 1_000_000) * alternativeModelPricing.input +
 			(estimatedTokens.output / 1_000_000) * alternativeModelPricing.output;
 
-		const costSavings = alternativeModelCost - recommendedModelCost;
+		// Calculate cost savings relative to the more expensive option
+		const costSavings = Math.abs(alternativeModelCost - recommendedModelCost);
 
 		const reasoning = this.getReasoningForTask(
 			classification.taskType,
@@ -195,7 +196,7 @@ export class ModelAdvisor {
 				0.95,
 				baseRec.confidence * classification.confidence,
 			),
-			costSavings: costSavings > 0 ? costSavings : undefined,
+			costSavings: costSavings,
 			reasoning,
 			alternativeModel: {
 				model: alternativeModel,

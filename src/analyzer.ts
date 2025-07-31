@@ -276,6 +276,7 @@ export function analyzeHourlyUsage(entries: UsageEntry[]): HourlyUsage[] {
 		const hour = new Date(entry.timestamp).getHours();
 		const hourData = hourlyMap.get(hour);
 		if (hourData) {
+			hourData.totalTokens += entry.total_tokens;
 			hourData.cost += calculateCost(entry);
 
 			if (entry.model.includes("sonnet")) {
@@ -319,6 +320,7 @@ export function analyzeModelEfficiency(
 
 		const modelData = modelMap.get(entry.model);
 		if (modelData) {
+			modelData.totalTokens += entry.total_tokens;
 			modelData.totalCost += calculateCost(entry);
 			modelData.conversations.add(entry.conversationId);
 		}

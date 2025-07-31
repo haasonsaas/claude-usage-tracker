@@ -33,6 +33,7 @@ program
 		"Your Claude plan (Pro, $100 Max, $200 Max)",
 		"Pro",
 	)
+	.option("-j, --json", "Output as JSON instead of formatted text")
 	.action(async (options) => {
 		try {
 			const plan = options.plan as PlanType;
@@ -43,45 +44,91 @@ program
 				process.exit(1);
 			}
 
-			console.log(chalk.blue("Loading usage data..."));
+			if (!options.json) {
+				console.log(chalk.blue("Loading usage data..."));
+			}
 			const entries = await loadUsageData();
 
 			if (entries.length === 0) {
-				console.log(
-					chalk.yellow(
-						"No usage data found. Make sure Claude Code has been used and data is available.",
-					),
-				);
+				if (options.json) {
+					console.log(
+						JSON.stringify(
+							{
+								error: "No usage data found",
+								message:
+									"Make sure Claude Code has been used and data is available.",
+							},
+							null,
+							2,
+						),
+					);
+				} else {
+					console.log(
+						chalk.yellow(
+							"No usage data found. Make sure Claude Code has been used and data is available.",
+						),
+					);
+				}
 				return;
 			}
 
 			const weeklyUsage = getCurrentWeekUsage(entries);
 			const rateLimitInfo = getRateLimitInfo(weeklyUsage, plan);
 
-			console.log(formatHeader(`Claude Code Usage Status (${plan} Plan)`));
-			console.log(formatWeeklySummary(weeklyUsage));
-			console.log(formatHeader("Rate Limit Status"));
-			console.log(formatRateLimitStatus(rateLimitInfo));
+			if (options.json) {
+				const jsonOutput = {
+					plan,
+					weeklyUsage,
+					rateLimitInfo,
+					warnings: [] as Array<{ level: string; message: string }>,
+				};
 
-			// Warnings
-			if (
-				rateLimitInfo.percentUsed.sonnet4.max > 80 ||
-				rateLimitInfo.percentUsed.opus4.max > 80
-			) {
-				console.log(
-					chalk.red.bold(
-						"\\n⚠️  WARNING: You are approaching your weekly rate limits!",
-					),
-				);
-			} else if (
-				rateLimitInfo.percentUsed.sonnet4.max > 50 ||
-				rateLimitInfo.percentUsed.opus4.max > 50
-			) {
-				console.log(
-					chalk.yellow.bold(
-						"\\n⚡ NOTICE: You have used over 50% of your weekly limits.",
-					),
-				);
+				// Add warnings
+				if (
+					rateLimitInfo.percentUsed.sonnet4.max > 80 ||
+					rateLimitInfo.percentUsed.opus4.max > 80
+				) {
+					jsonOutput.warnings.push({
+						level: "warning",
+						message: "You are approaching your weekly rate limits!",
+					});
+				} else if (
+					rateLimitInfo.percentUsed.sonnet4.max > 50 ||
+					rateLimitInfo.percentUsed.opus4.max > 50
+				) {
+					jsonOutput.warnings.push({
+						level: "notice",
+						message: "You have used over 50% of your weekly limits.",
+					});
+				}
+
+				console.log(JSON.stringify(jsonOutput, null, 2));
+			} else {
+				console.log(formatHeader(`Claude Code Usage Status (${plan} Plan)`));
+				console.log(formatWeeklySummary(weeklyUsage));
+				console.log(formatHeader("Rate Limit Status"));
+				console.log(formatRateLimitStatus(rateLimitInfo));
+
+				// Warnings
+				if (
+					rateLimitInfo.percentUsed.sonnet4.max > 80 ||
+					rateLimitInfo.percentUsed.opus4.max > 80
+				) {
+					console.log(
+						chalk.red.bold(
+							"\\n⚠️  WARNING: You are approaching your weekly rate limits!",
+						),
+					);
+				} else if (
+					rateLimitInfo.percentUsed.sonnet4.max > 50 ||
+					rateLimitInfo.percentUsed.opus4.max > 50
+				) {
+					console.log(
+						chalk.yellow.bold(
+							"\\n⚡ NOTICE: You have used over 50% of your weekly limits.",
+						),
+					);
+				}
 			}
 		} catch (error) {
 			console.error(chalk.red("Error loading usage data:"), error);
@@ -93,13 +140,22 @@ program
 	.command("daily")
 	.description("Show daily usage breakdown")
 	.option("-d, --days <days>", "Number of days to show", "7")
+	.option("-j, --json", "Output as JSON instead of formatted text")
 	.action(async (options) => {
 		try {
-			console.log(chalk.blue("Loading usage data..."));
+			if (!options.json) {
+				console.log(chalk.blue("Loading usage data..."));
+			}
 			const entries = await loadUsageData();
 
 			if (entries.length === 0) {
-				console.log(chalk.yellow("No usage data found."));
+				if (options.json) {
+					console.log(JSON.stringify({
+						error: "No usage data found"
+					}, null, 2));
+				} else {
+					console.log(chalk.yellow("No usage data found."));
+				}
 				return;
 			}
 
@@ -120,8 +176,16 @@ program
 				}
 			}
 
-			console.log(formatHeader(`Daily Usage (Last ${days} days)`));
-			console.log(formatDailyTable(filteredUsage));
+			if (options.json) {
+				const jsonOutput = {
+					days: parseInt(options.days),
+					dailyUsage: Object.fromEntries(filteredUsage)
+				};
+				console.log(JSON.stringify(jsonOutput, null, 2));
+			} else {
+				console.log(formatHeader(`Daily Usage (Last ${days} days)`));
+				console.log(formatDailyTable(filteredUsage));
+			}
 		} catch (error) {
 			console.error(chalk.red("Error loading usage data:"), error);
 			process.exit(1);
