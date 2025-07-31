@@ -1,0 +1,304 @@
+📝 Loaded configuration from: /Users/jonathanhaas/claude-usage-tracker/config/default.yaml
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-temp-scratch-lead-gen-system/4dcd80e0-6e16-4378-a238-92d4a798fc51.jsonl: 339 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-tmp/211d8af4-63a2-4e24-9c00-7d39299674ad.jsonl: 68 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-temp-scratch/5bea2cfe-f550-4bd2-9a00-750f6ae39c73.jsonl: 0 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-temp-scratch/26780b69-298f-4b78-86f0-ef427e6706ab.jsonl: 1226 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-messages/bdffe7a4-fba7-4596-a391-dbba55e73058.jsonl: 30 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-lil-guy/018456e7-0c59-41a9-a1f5-d27455e540fb.jsonl: 648 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-projects-web-apps-evalops-web/f2e5a00d-3d15-41cf-b55b-f74ff667c148.jsonl: 848 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-projects-web-apps-evalops-web/ee80c5b7-556a-43ca-8d6c-c865a99ab28c.jsonl: 1007 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-projects-web-apps-evalops-web/e28af1fe-670b-422b-b75b-f6a411d8f499.jsonl: 786 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-projects-web-apps-evalops-web/e27d0c41-5c78-4687-b470-feebc04d590c.jsonl: 533 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-projects-web-apps-evalops-web/a22c0a0d-84d8-4485-ac5f-5c7ace5ba5cd.jsonl: 69 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-projects-web-apps-evalops-web/803b14ea-0fcc-42c3-9c74-ea9a1c550855.jsonl: 1058 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-projects-web-apps-evalops-web/77581773-e17c-4fdf-ba32-d5d1253809df.jsonl: 3013 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-projects-web-apps-evalops-web/72b391f8-2d42-4be2-9357-c426d8ff9d4a.jsonl: 524 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-projects-web-apps-evalops-web/5cf5b986-8496-48d1-96cc-eb6badc9561c.jsonl: 39 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-projects-web-apps-evalops-web/5098ca1f-c98a-4b2d-bb77-9be09e62b8c3.jsonl: 26 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-projects-web-apps-evalops-web/4a1e0448-031c-4445-97c4-89fde7283d1f.jsonl: 300 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-projects-web-apps-evalops-web/4800b95c-f354-42f1-afe5-1e9e4f136efc.jsonl: 44 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-projects-web-apps-evalops-web/3a53f7bd-ce94-4cf5-b5cf-2bd201df1307.jsonl: 379 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-katalina/7d7ab5e8-4aa0-4fef-ac2e-8133cbab2c32.jsonl: 240 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-infra-asus-nuc-proxmox/7acc52b7-dc93-41c4-a642-c110d5d15970.jsonl: 115 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-infra/43e7f23e-9752-4f8f-b3cb-8d9706474879.jsonl: 252 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-deep-code-reasoning-mcp/57546c0f-e5fc-4261-bab5-f1d8ee9c7db6.jsonl: 126 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-dotfiles/f8a59ca2-8329-4b1a-b1b5-04354fe035d1.jsonl: 0 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-dotfiles/ee890e8f-7058-45d6-81d1-df4adc45a619.jsonl: 94 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-dotfiles/e693bc5e-a053-443a-be96-2a9c847a2f1c.jsonl: 967 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-dotfiles/c560f5a0-96e3-4821-9bcb-8d9f3277dbc3.jsonl: 2707 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-dotfiles/be930e80-c133-4891-85c6-3dd8e8bbfeb6.jsonl: 117 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-dotfiles/6c8c3590-3c21-4deb-aa84-8933aa7c9e9d.jsonl: 9 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-dotfiles/31ef8fa7-287a-4a6b-8ff2-1ff3d482006a.jsonl: 0 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-dotfiles/212f8662-d60f-4be1-8faa-1eeb53ffadf7.jsonl: 0 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-homelab/f8c4b6f2-dab7-41de-a6b4-47dad8f4dd1e.jsonl: 251 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-homelab/e715209b-6af7-4230-af99-a1f6061103d7.jsonl: 311 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-homelab/e47b0be9-3ae9-45dd-845b-c3be3cc920e4.jsonl: 1072 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-homelab/dac70137-231f-4777-abee-59673ead56e8.jsonl: 38 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-homelab/c41a22b1-c9db-4e6f-86a1-ba28a2d625bf.jsonl: 924 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-homelab/b9430385-c87c-490a-85e8-deb4d1b900ea.jsonl: 178 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-homelab/b7ca0049-54e8-43e0-a194-f41f70bbe6ec.jsonl: 245 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-homelab/a3faabe0-d449-4953-9733-a392bd748eb5.jsonl: 199 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-homelab/a060374a-37e6-4acc-aafc-39eb53b08bc9.jsonl: 120 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-homelab/9e05d975-a4e1-451b-9cdc-f0ace7bd51c1.jsonl: 12 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-homelab/98cc1714-5e92-4999-870d-a115601f6079.jsonl: 293 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-homelab/946ca65f-1277-4128-8420-e421c97be8fd.jsonl: 534 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-homelab/7fb003bd-b871-4d3c-8c55-847b40d0ceaa.jsonl: 909 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-homelab/7e5d31ef-1063-47c5-ac7c-f75391bffb3b.jsonl: 2290 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-homelab/7cf5a958-48b4-4cdc-b775-dc5256bd607e.jsonl: 1 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-homelab/6f93e0ae-f61e-474b-a999-777ae63335ae.jsonl: 3973 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-homelab/6d87fb01-ada7-4fe8-8510-cc331fd47ecc.jsonl: 322 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-homelab/67ef0246-8285-4531-a1e0-60e656f8de1d.jsonl: 351 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-homelab/4bf7facf-9258-4dd6-9959-c62b0057f671.jsonl: 1761 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-homelab/4aa05178-cdf0-474f-8026-b6c36e2751bb.jsonl: 17 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-homelab/3b2d9664-cc88-4a46-bfc1-0f3ab4ccc66a.jsonl: 796 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-homelab/29e73475-12cb-4abd-a388-41d4e0639087.jsonl: 305 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-homelab/1a00f30b-4c44-4e47-872a-1d5cbfa78488.jsonl: 417 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-homelab/146648d1-3d63-4c81-ae61-12e02431f6ee.jsonl: 36 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-homelab/0791df9e-82dd-4f3f-958a-91e580137db4.jsonl: 2854 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-homelab/03820f52-526e-44f7-9df9-ae7fdbe84464.jsonl: 1623 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-claude-usage-tracker/7f62a7df-475c-4cdb-9c2c-49b1d6f68111.jsonl: 72 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-claude-usage-tracker/1bb873c2-cfee-4403-8487-eca2468aaf42.jsonl: 271 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/ffcfb350-688e-4b9d-86cc-d84349bf093c.jsonl: 4417 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/fb15b9cc-e1dd-45b4-9df4-a23912f894ea.jsonl: 1333 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/f737215b-0850-4857-9280-bcdc60ebaec5.jsonl: 3425 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/ee3a5e0f-445b-4977-9081-b15d4cdbaa42.jsonl: 1624 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/d1b64b98-90d8-46ed-9f7b-3597bbff24bd.jsonl: 160 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/cd258e1c-ff46-4fc1-9521-372e8b8ab9f1.jsonl: 4638 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/cacfbd99-ea2e-4ce8-86f7-20b6fe1fca90.jsonl: 6100 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/c87c971d-d19a-4e75-83d5-f21e1373fd43.jsonl: 7079 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/c435529f-2ed7-4cd8-9231-457cde326c4f.jsonl: 109 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/c1e8d2ea-ab72-41ca-a96b-f91761eced0f.jsonl: 28 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/c185ab67-a797-4667-b785-824a7e784db1.jsonl: 813 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/c174bb9c-1ea5-49be-9d95-e28913935dc9.jsonl: 1672 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/bb32ef47-74a1-4bdd-b481-285510d6abca.jsonl: 1 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/b816828a-e4f2-4947-b09f-a3292c31ed25.jsonl: 1511 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/b74e75be-28f2-42c9-b493-1ef0cb6eac5a.jsonl: 1410 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/af965d7b-2a01-4330-9e8b-660b1b53bf93.jsonl: 0 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/af1cc599-d05a-4822-b74b-ee9c3f726765.jsonl: 5537 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/a5ac0c3b-00f6-4a77-bd29-ed968d1d066a.jsonl: 0 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/975e2243-5b81-4e9b-93f2-952ce681be94.jsonl: 4756 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/958f4029-2bd3-4b73-ade7-05d9816e6f39.jsonl: 1932 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/941f285f-364d-442a-aa3d-68049aad2286.jsonl: 5589 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/93af1c3c-0b10-4ecf-b3fd-71631196f5a6.jsonl: 316 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/8bc8651f-48a0-48e5-ad78-16de2921a48a.jsonl: 659 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/7f3b4c74-1922-4cb8-bcce-a05ad559d694.jsonl: 1453 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/7db3d103-15bf-419a-aab9-e335697b0459.jsonl: 182 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/786a55c1-5416-4fbf-b331-354820097757.jsonl: 1103 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/784e15eb-172a-4125-a50a-7e84b40f37f7.jsonl: 0 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/75d8b532-f167-4fee-8f38-5b6ba685039e.jsonl: 125 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/6c328ee9-cc80-4727-9cf8-46c633a1664f.jsonl: 30 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/6bae0626-7066-4150-99cd-e87ab79b0e2c.jsonl: 163 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/6a92ae10-b2d2-4b6e-8164-d5a614946f25.jsonl: 1317 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/523b3db8-b1d0-4c05-b1b2-aaec7633aeb6.jsonl: 326 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/51bc4d3b-3a18-421d-ab3d-4062ca3161e0.jsonl: 193 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/518bb707-8cc6-4b1e-b500-42692edb258d.jsonl: 214 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/38899626-f0d9-44ab-a772-cdc84d8faffc.jsonl: 1506 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/30d291a1-ad1d-4c23-a076-8bbe92c5c16c.jsonl: 5 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/2a17334b-ddc3-479d-813d-e64bb1ee55e7.jsonl: 1015 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/2853eca4-7279-4e96-8f8f-c075f7c01fd3.jsonl: 717 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/26e370c9-3a90-4d15-ba01-7c1840ebe690.jsonl: 3244 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/2106ca54-d429-4d7d-8ff7-4c570e98c673.jsonl: 0 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/1fcd805e-b1df-46b0-b59f-9e99394b8365.jsonl: 0 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/1e26bfa4-5f9e-49a8-99b3-7d0289d874f8.jsonl: 2162 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/1480b8ef-d1de-45ff-b63b-cf8ba519d49a.jsonl: 1002 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/12ed3f1b-6290-40ad-8b16-4d52f5f8d75e.jsonl: 287 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/0cdd1969-403b-410d-ad67-8e49db16866c.jsonl: 258 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-evalops-platform/059baa35-0e75-499d-8249-da1f9f736f76.jsonl: 1622 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-claude-recursive-spawn/e9e46dce-8417-4a57-b2db-eabd059a055d.jsonl: 1 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-claude-recursive-spawn/7146dea5-0654-46e5-b019-6639386bdcc1.jsonl: 1 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-iOS/845e0019-46da-431d-920e-c0843e813f8d.jsonl: 198 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-iOS/830481f3-5c31-446c-b8c3-f3eb1608c12c.jsonl: 17 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-agent/a6d6a313-f3b3-46f9-963e-264cdf1b0642.jsonl: 210 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-asus-nuc-proxmox/e2556fab-88cd-481b-bf7c-eee4a2108c16.jsonl: 676 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-asus-nuc-proxmox/d9bee28a-ca2e-4a63-8079-44bed3025edb.jsonl: 954 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-asus-nuc-proxmox/b95ef970-dbae-40b1-9372-84b491a99c96.jsonl: 447 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-asus-nuc-proxmox/b6d9cfa5-47ab-4ec2-8813-e81a45aaafe5.jsonl: 190 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-asus-nuc-proxmox/48d43629-0165-4691-a33d-b1b33f24fae5.jsonl: 103 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-asus-nuc-proxmox/470536f6-8227-4032-8f64-bf965c76b91f.jsonl: 44 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-asus-nuc-proxmox/46bfc527-3a85-4f40-b493-5fbd71669b3d.jsonl: 718 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-asus-nuc-proxmox/3fafe1f3-6519-4ecb-bcb0-9a6c75bbeae6.jsonl: 0 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-asus-nuc-proxmox/1a87f3a7-75d8-4143-8f56-791fc6312a70.jsonl: 2382 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-asus-nuc-proxmox/08043f9b-1e77-4bbb-baa2-42baccffd60d.jsonl: 229 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/f8baf722-13ed-4e98-8f19-fb6ee7f6b274.jsonl: 54 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/f2d6fdac-66ff-4c65-aa47-0b770538df97.jsonl: 1331 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/e994d738-b121-4bbf-b3e0-2513a9befe8a.jsonl: 190 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/e39081de-1410-4c75-84a1-bbe3eb9df498.jsonl: 662 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/e3795cfa-125c-442e-8632-8a6e2871d081.jsonl: 518 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/d8e7c52d-5aac-4199-8507-7fff2f802045.jsonl: 375 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/d77ec196-43cd-487a-89be-44282992a156.jsonl: 2 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/d5d1c73b-cb64-4080-b203-244d9b191212.jsonl: 800 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/c6f5003c-a9b1-476f-8436-9fb11a8fd543.jsonl: 362 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/c5edef9b-3b3b-48dc-af56-136edec8bc6f.jsonl: 1 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/bb7e74cc-093a-4ba2-ad77-1611eb0c2402.jsonl: 219 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/b91be31a-d5e8-45b8-a39b-f8f9a0de55bf.jsonl: 62 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/ae6a6552-05b8-4295-8a66-40d109b3c4b3.jsonl: 1 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/a91542da-04de-48c0-90f3-4fb328b17afc.jsonl: 260 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/a816ee22-bd4a-43fa-aff6-27c069162daf.jsonl: 856 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/a2bfea8e-6d13-4b5b-9b15-b41267fac5fb.jsonl: 877 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/a0976493-ddaf-4d27-9b4a-3563c8053209.jsonl: 87 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/9ebf8d29-989f-4c82-a92c-ee5b98ca4904.jsonl: 104 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/9e48de2e-feee-42d4-b5a2-3a358e78345a.jsonl: 75 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/9c61bd6b-9b49-404e-bf1b-8025f9ce01e7.jsonl: 636 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/9986731c-f6cc-4aad-b5cd-fedc25ba7f0a.jsonl: 96 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/9269ae4e-5836-4013-afb2-d87138d5b320.jsonl: 72 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/8bb6cf8c-0b23-47c6-9157-e793aba93201.jsonl: 987 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/840ebe38-6ba6-46b1-aa5e-966f71b2b329.jsonl: 100 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/7616705d-04e3-4d0c-8c89-218c48af7ce2.jsonl: 100 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/740779f8-78e0-4161-bb40-acc1c3c45e1e.jsonl: 76 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/73e6ad5c-fc97-42ae-8ada-719034d6c415.jsonl: 1281 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/68e82e43-636e-4eca-9a2f-df282e053770.jsonl: 147 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/68625689-6f24-4409-b4f3-0ab69cdabfc8.jsonl: 270 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/5e993617-942c-42ee-93f3-09f8ba7b14b8.jsonl: 68 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/589e1183-de58-4ba9-ab1b-70be28feaabf.jsonl: 515 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/56850b5d-4149-4d10-ba17-794e8fd05424.jsonl: 156 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/52e1e419-4877-446e-8731-3fd4a7648cae.jsonl: 1128 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/50f1ce68-9832-479e-b5d2-b69230174da9.jsonl: 1043 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/50059a96-9dc4-44de-9776-04ec60a4b811.jsonl: 105 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/4ae84c6e-bbf3-4811-a144-de0be7f04ad4.jsonl: 121 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/484edc77-5d18-4c46-b02c-7d613170d942.jsonl: 512 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/3b18f3f6-f2a7-4969-a6a9-f575be5c2b98.jsonl: 7 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/39d9bbf8-bda9-4cc4-b763-9353ff16845a.jsonl: 0 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/2ef78071-753b-41a0-9b86-827d66baccd0.jsonl: 97 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/2d6242b8-6159-435a-a392-5153b2a150a3.jsonl: 145 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/24340b88-c0b6-4e87-9b48-55cf674a683d.jsonl: 592 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/1a8032fe-6afc-49df-94e6-eb769233d2d4.jsonl: 150 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/14ac3f9f-e997-483a-8e92-7cd5fd042ab2.jsonl: 216 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-bloom-fe/10591ff0-db4c-44f6-8ccc-a1f6c4855dd7.jsonl: 1692 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Projects-Web-Apps-haas-blog/f665bbfb-fa89-401b-b33e-ab08ae563b41.jsonl: 537 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Projects-Web-Apps-haas-blog/eb700ecc-324c-4dcf-9dd6-6b88f4153db2.jsonl: 0 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Projects-Web-Apps-haas-blog/eb3a52bc-671e-4ab1-bd9a-fcd8e36809a3.jsonl: 14 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Projects-Web-Apps-haas-blog/da872056-d4e1-4bed-a221-0ea51f06734d.jsonl: 29 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Projects-Web-Apps-haas-blog/a6dc9179-24b5-40f1-a9aa-b3480dc960e8.jsonl: 61 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Projects-Web-Apps-haas-blog/9794f856-c37c-468f-9bcd-b5bafc84e01d.jsonl: 114 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Projects-Web-Apps-haas-blog/95b5ef5f-a059-4fa1-a554-7d3d8e932f48.jsonl: 103 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Projects-Web-Apps-haas-blog/8e559152-3d6a-4c4b-af33-6bd674b06fba.jsonl: 223 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Projects-Web-Apps-haas-blog/87c92356-95fd-4787-b876-a356d6b74537.jsonl: 0 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Projects-Web-Apps-haas-blog/6298770c-db9c-4905-8e77-fa27da095039.jsonl: 253 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Projects-Web-Apps-haas-blog/6050ed10-7500-473e-bd8e-d012af5482cf.jsonl: 432 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Projects-Web-Apps-haas-blog/5edc2ec3-7b38-4381-abf4-2f596407bd7f.jsonl: 15 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Projects-Web-Apps-haas-blog/4e878e9a-10be-4883-a03a-80628d4108ce.jsonl: 0 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Projects-Web-Apps-haas-blog/4902191a-95f4-4e65-9963-50192a895015.jsonl: 176 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Projects-Web-Apps-haas-blog/4779863c-ba41-465f-a825-02d6dbb4c678.jsonl: 84 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Projects-Web-Apps-haas-blog/3dfcf662-80df-46ce-ba4e-ead1073b92c5.jsonl: 196 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Projects-Web-Apps-haas-blog/35c2cd64-dc4e-4ed4-a8b7-7f3b1d2bd952.jsonl: 102 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Projects-Web-Apps-haas-blog/2e74c548-52c3-496f-8f23-257e3a4aa42b.jsonl: 97 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Projects-Web-Apps-haas-blog/23054df3-0609-42d7-821b-697a31b85130.jsonl: 331 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Projects-Web-Apps-haas-blog/1b9724f4-8a52-4d14-a84a-4763f55ea414.jsonl: 131 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Projects-Web-Apps-haas-blog/16a6a777-e3b9-4ed2-a624-4848c869c20a.jsonl: 27 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Downloads-workout/c522371f-26b7-4583-96ac-019c77aa4c7d.jsonl: 450 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Downloads/615922f2-79ae-49cf-8988-f3be9987ebeb.jsonl: 77 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/fc5b6242-2251-4e5c-855c-026c482ea6bd.jsonl: 773 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/fada61c6-39e0-40e7-a364-ccf08baaaedd.jsonl: 248 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/f545cb32-d7d7-4c3c-b91c-9c91ab7d0236.jsonl: 0 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/f0abba0f-6069-4c6d-aac6-ca8c35148720.jsonl: 908 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/efe40f8f-e35f-4437-945a-024839000405.jsonl: 1351 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/e9986a9c-d4b8-4a3e-b4d5-a88fe1e881e7.jsonl: 777 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/e93194b5-5ddd-48e9-8c6f-2433fdc7fdcb.jsonl: 6282 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/e4a3056d-e80a-4f11-ac14-60ffe995a251.jsonl: 623 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/dbe54e79-1753-46d5-8d61-9cafa9bee7bd.jsonl: 144 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/d9cadf20-6c74-4f24-8897-526d42d2a8b6.jsonl: 998 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/cff374c3-ee35-4e1d-b3fd-1395ce0da231.jsonl: 1691 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/ce4d7b19-edb9-4413-9181-6c9cb5280d6a.jsonl: 126 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/c3e72699-1098-4369-aed2-b267c5f99364.jsonl: 1439 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/b5ac09cb-f814-4121-a3a1-bbd627d649f4.jsonl: 3205 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/b51822e7-6c7a-497f-b937-07053b228784.jsonl: 674 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/b437a0cc-3e60-479c-bb74-cb9658d87dfa.jsonl: 39 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/aa6318ab-1b34-4ac2-86de-c2e1f83208d5.jsonl: 0 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/96836f47-ef54-40ca-9daf-2b9027e283d9.jsonl: 6118 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/9598799b-2322-4ec4-b38a-c5a62921c2d8.jsonl: 744 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/95185bf6-51af-4754-a44c-7e42e3e1cfe8.jsonl: 2111 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/93d83914-67d7-43b4-8257-4afebcff0922.jsonl: 63 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/79da8fb8-474b-4d02-8a6e-59163aaaf2f4.jsonl: 301 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/78f625bc-b0ab-423c-a82c-21f4a039178a.jsonl: 3205 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/743ad35a-9f86-4237-b2cd-3f00b8ac83b7.jsonl: 81 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/61d6e429-0793-4524-af16-d1b313e54fb7.jsonl: 106 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/56562182-40da-464e-86fc-997190be344f.jsonl: 15 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/5307d0a9-4245-49d9-a70e-5b65e6356775.jsonl: 2375 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/4d95b0f2-dd65-4512-ae11-193f63332f37.jsonl: 707 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/4d2754ce-b198-4688-8b13-143ac6bb60ae.jsonl: 49 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/454c3fae-f4a8-466f-afe4-0d270b55654f.jsonl: 284 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/40752aa7-739f-46bb-8aff-4911a2992ff6.jsonl: 24 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/3afb9ffd-9c1a-4043-bcb2-c2d87a353bc6.jsonl: 5480 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/3a5bf484-6d18-4f84-b46f-72d60a4a4d36.jsonl: 61 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/371575ce-71e0-4520-b76d-2c870a0e65e8.jsonl: 569 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/36d07a45-26d3-4915-80ec-bc0cb60fc031.jsonl: 49 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/3620d067-69db-432a-8c6f-1413c31ad003.jsonl: 293 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/356fd824-8ce7-4510-97e2-6685e948a3cb.jsonl: 426 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/25d9bd5f-6b52-42e6-a753-b94ae8030b01.jsonl: 2335 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas-Desktop-platform/18d97057-5ba2-42ad-9ed6-9366665b33d8.jsonl: 697 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users/e4db6f4d-117e-4b26-b8dc-215c7bdd01d5.jsonl: 0 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas/cf843fd5-eb4f-42c4-939e-d4e916b88274.jsonl: 181 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas/c8b86d5e-dd48-49bf-bb81-a0e088a14607.jsonl: 10 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas/b5dc4ca0-08f8-4de5-ad16-d07216ba667f.jsonl: 136 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas/aded36f3-c04a-4cca-956a-3133a4e5e905.jsonl: 1097 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas/a9926aa9-b0bb-4d76-a7aa-869e22c36917.jsonl: 157 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas/a4ff0dbc-9cfa-4514-890e-a191622d8d38.jsonl: 6535 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas/a2626bee-74ed-4bdb-a6a1-1918e6ea054b.jsonl: 23 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas/90696b18-b949-4783-8cf1-c44bac30848b.jsonl: 24 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas/8b9ce6b2-2bb4-414b-a209-ca35fcfbf2a6.jsonl: 50 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas/7ff5c5e1-11f3-4cd6-b725-1a2d1748518e.jsonl: 6 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas/7d23f953-df97-44c2-b023-c16d00aa264a.jsonl: 0 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas/7cc1a88e-eb3a-4a68-91d8-aa259e13464b.jsonl: 75 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas/73083007-06e2-4d63-af51-76ae5b9f80f1.jsonl: 427 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas/713538d5-f971-4658-b949-3ce9d4cb05a3.jsonl: 60 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas/628a6572-550e-4916-9b10-35773ee35f6a.jsonl: 1345 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas/614004e4-04c1-4715-98d1-2567222bdda8.jsonl: 6 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas/28a2a892-e784-429c-9bf9-87679fd4a4a8.jsonl: 70 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas/161c45c0-c1ca-4cc2-842d-717197381986.jsonl: 0 valid entries, 0 skipped
+📁 /Users/jonathanhaas/.claude/projects/-Users-jonathanhaas/0bddd906-8a26-4a49-bcf6-4bc2ac50af6f.jsonl: 10 valid entries, 0 skipped
+{
+  "budgetPrediction": {
+    "currentSpend": 26471.940448499663,
+    "projectedMonthlySpend": 26471.940448499663,
+    "daysUntilBudgetExhausted": 0,
+    "confidenceLevel": 0.95,
+    "trendDirection": "decreasing",
+    "recommendations": [
+      "🚨 Projected to exceed budget by 10%+ - consider reducing Opus usage",
+      "⚠️  Budget may be exhausted within 10 days - switch to Sonnet for routine tasks"
+    ]
+  },
+  "anomalies": [],
+  "modelSuggestions": [
+    {
+      "currentModel": "claude-opus-4-20250514",
+      "suggestedModel": "claude-3.5-sonnet-20241022",
+      "potentialSavings": 2.4813257624999996,
+      "confidence": 0.8,
+      "reasoning": "Simple task suitable for Sonnet with 78% cost savings",
+      "conversationContext": "Conversation 88a14607 - Low complexity, non-coding task"
+    },
+    {
+      "currentModel": "claude-opus-4-20250514",
+      "suggestedModel": "claude-3.5-sonnet-20241022",
+      "potentialSavings": 2.2720888125,
+      "confidence": 0.8,
+      "reasoning": "Simple task suitable for Sonnet with 78% cost savings",
+      "conversationContext": "Conversation ac50af6f - Low complexity, non-coding task"
+    },
+    {
+      "currentModel": "claude-opus-4-20250514",
+      "suggestedModel": "claude-3.5-sonnet-20241022",
+      "potentialSavings": 1.9224562500000002,
+      "confidence": 0.8,
+      "reasoning": "Simple task suitable for Sonnet with 78% cost savings",
+      "conversationContext": "Conversation 1748518e - Low complexity, non-coding task"
+    },
+    {
+      "currentModel": "claude-opus-4-20250514",
+      "suggestedModel": "claude-3.5-sonnet-20241022",
+      "potentialSavings": 1.3589696249999998,
+      "confidence": 0.8,
+      "reasoning": "Simple task suitable for Sonnet with 78% cost savings",
+      "conversationContext": "Conversation aa7c9e9d - Low complexity, non-coding task"
+    },
+    {
+      "currentModel": "claude-opus-4-20250514",
+      "suggestedModel": "claude-3.5-sonnet-20241022",
+      "potentialSavings": 0.70030935,
+      "confidence": 0.8,
+      "reasoning": "Simple task suitable for Sonnet with 78% cost savings",
+      "conversationContext": "Conversation e7bd51c1 - Low complexity, non-coding task"
+    }
+  ]
+}

@@ -83,69 +83,112 @@ interface TransitionData {
 }
 
 export class PatternAnalyzer {
-	analyzeConversationLengthPatterns(
-		entries: UsageEntry[],
-	): ConversationLengthPattern[] {
+	analyzeConversationLengthPatterns(entries: UsageEntry[]) {
 		const conversations = this.groupByConversation(entries);
-		const patterns = new Map<string, ConversationLengthPattern>();
+		
+		// Categorize conversations
+		const quickQuestions: string[] = [];
+		const detailedDiscussions: string[] = [];
+		const deepDives: string[] = [];
+		
+		const lengthTotals = {
+			quickQuestions: 0,
+			detailedDiscussions: 0,
+			deepDives: 0
+		};
+		
+		const costTotals = {
+			quickQuestions: { avgCost: 0, totalCost: 0 },
+			detailedDiscussions: { avgCost: 0, totalCost: 0 },
+			deepDives: { avgCost: 0, totalCost: 0 }
+		};
 
-		for (const [_, convEntries] of conversations) {
+		for (const [conversationId, convEntries] of conversations) {
 			const messageCount = convEntries.length;
-			const category = this.categorizeConversationLength(messageCount);
-
-			if (!patterns.has(category)) {
-				patterns.set(category, {
-					lengthCategory:
-						category as ConversationLengthPattern["lengthCategory"],
-					messageCount: 0,
-					avgTokensPerMessage: 0,
-					avgCostPerMessage: 0,
-					efficiency: 0,
-					frequency: 0,
-					trendDirection: "stable",
-				});
-			}
-
-			const pattern = patterns.get(category);
-			if (!pattern) continue;
-		const totalTokens = convEntries.reduce(
-				(sum, e) => sum + e.total_tokens,
-				0,
-			);
-			const totalCost = convEntries.reduce(
-				(sum, e) => sum + calculateCost(e),
-				0,
-			);
-
-			pattern.messageCount += messageCount;
-			pattern.avgTokensPerMessage += totalTokens;
-			pattern.avgCostPerMessage += totalCost;
-			pattern.efficiency += totalTokens / Math.max(totalCost, 0.001);
-			pattern.frequency += 1;
-		}
-
-		// Calculate averages and trends
-		for (const pattern of patterns.values()) {
-			if (pattern.frequency > 0) {
-				pattern.messageCount = Math.round(
-					pattern.messageCount / pattern.frequency,
-				);
-				pattern.avgTokensPerMessage = Math.round(
-					pattern.avgTokensPerMessage / pattern.frequency,
-				);
-				pattern.avgCostPerMessage =
-					pattern.avgCostPerMessage / pattern.frequency;
-				pattern.efficiency = pattern.efficiency / pattern.frequency;
-				pattern.trendDirection = this.calculateLengthTrend(
-					entries,
-					pattern.lengthCategory,
-				);
+			const totalCost = convEntries.reduce((sum, e) => sum + calculateCost(e), 0);
+			
+			if (messageCount <= 2) {
+				quickQuestions.push(conversationId);
+				lengthTotals.quickQuestions += messageCount;
+				costTotals.quickQuestions.totalCost += totalCost;
+			} else if (messageCount <= 8) {
+				detailedDiscussions.push(conversationId);
+				lengthTotals.detailedDiscussions += messageCount;
+				costTotals.detailedDiscussions.totalCost += totalCost;
+			} else {
+				deepDives.push(conversationId);
+				lengthTotals.deepDives += messageCount;
+				costTotals.deepDives.totalCost += totalCost;
 			}
 		}
 
-		return Array.from(patterns.values()).sort(
-			(a, b) => b.frequency - a.frequency,
-		);
+		// Calculate averages
+		const avgLengthByType = {
+			quickQuestions: quickQuestions.length > 0 ? lengthTotals.quickQuestions / quickQuestions.length : 0,
+			detailedDiscussions: detailedDiscussions.length > 0 ? lengthTotals.detailedDiscussions / detailedDiscussions.length : 0,
+			deepDives: deepDives.length > 0 ? lengthTotals.deepDives / deepDives.length : 0
+		};
+
+		// Calculate cost distributions
+		const costDistribution = {
+			quickQuestions: {
+				avgCost: quickQuestions.length > 0 ? costTotals.quickQuestions.totalCost / quickQuestions.length : 0,
+				totalCost: costTotals.quickQuestions.totalCost
+			},
+			detailedDiscussions: {
+				avgCost: detailedDiscussions.length > 0 ? costTotals.detailedDiscussions.totalCost / detailedDiscussions.length : 0,
+				totalCost: costTotals.detailedDiscussions.totalCost
+			},
+			deepDives: {
+				avgCost: deepDives.length > 0 ? costTotals.deepDives.totalCost / deepDives.length : 0,
+				totalCost: costTotals.deepDives.totalCost
+			}
+		};
+
+		// Generate efficiency insights
+		const totalTokens = entries.reduce((sum, e) => sum + e.total_tokens, 0);
+		const totalExchanges = Array.from(conversations.values()).reduce((sum, conv) => sum + conv.length, 0);
+		const avgTokensPerExchange = totalExchanges > 0 ? totalTokens / totalExchanges : 0;
+
+		// Determine most/least efficient types
+		const efficiencies = [
+			{ type: 'quickQuestions', efficiency: avgLengthByType.quickQuestions > 0 ? costTotals.quickQuestions.totalCost / (avgLengthByType.quickQuestions * quickQuestions.length || 1) : 0 },
+			{ type: 'detailedDiscussions', efficiency: avgLengthByType.detailedDiscussions > 0 ? costTotals.detailedDiscussions.totalCost / (avgLengthByType.detailedDiscussions * detailedDiscussions.length || 1) : 0 },
+			{ type: 'deepDives', efficiency: avgLengthByType.deepDives > 0 ? costTotals.deepDives.totalCost / (avgLengthByType.deepDives * deepDives.length || 1) : 0 }
+		].filter(e => e.efficiency > 0);
+
+		const mostEfficientType = efficiencies.length > 0 ? efficiencies.reduce((min, curr) => curr.efficiency < min.efficiency ? curr : min).type : 'quickQuestions';
+		const leastEfficientType = efficiencies.length > 0 ? efficiencies.reduce((max, curr) => curr.efficiency > max.efficiency ? curr : max).type : 'deepDives';
+
+		const efficiencyInsights = {
+			mostEfficientType,
+			leastEfficientType,
+			avgTokensPerExchange
+		};
+
+		// Generate recommendations
+		const recommendations = [];
+		if (deepDives.length > conversations.size * 0.3) {
+			recommendations.push('Consider breaking down complex tasks into smaller conversations');
+		}
+		if (quickQuestions.length > conversations.size * 0.5) {
+			recommendations.push('Quick questions are efficient - continue this pattern');
+		}
+		if (avgTokensPerExchange < 1000) {
+			recommendations.push('Consider asking more comprehensive questions to get fuller responses');
+		}
+
+		return {
+			conversationTypes: {
+				quickQuestions: { count: quickQuestions.length },
+				detailedDiscussions: { count: detailedDiscussions.length },
+				deepDives: { count: deepDives.length }
+			},
+			avgLengthByType,
+			costDistribution,
+			efficiencyInsights,
+			recommendations
+		};
 	}
 
 	analyzeTimeToCompletion(entries: UsageEntry[]): TimeToCompletionAnalysis[] {
@@ -838,5 +881,283 @@ export class PatternAnalyzer {
 		const avgSquaredDiff =
 			squaredDiffs.reduce((sum, val) => sum + val, 0) / values.length;
 		return Math.sqrt(avgSquaredDiff);
+	}
+
+
+
+	identifyLearningCurves(entries: UsageEntry[]) {
+		const conversations = this.groupByConversation(entries);
+		const periods: Array<{
+			startDate: string;
+			endDate: string;
+			metrics: {
+				avgQuestionsPerDay: number;
+				avgComplexityScore: number;
+			};
+			characteristics: string[];
+		}> = [];
+		
+		// Sort entries by date
+		const sortedEntries = entries.sort((a, b) => 
+			new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+		);
+		
+		if (sortedEntries.length === 0) {
+			return { periods: [], overallTrend: 'stable' as const, insights: [] };
+		}
+		
+		// Group by weeks
+		const weeklyData = new Map<string, UsageEntry[]>();
+		for (const entry of sortedEntries) {
+			const date = new Date(entry.timestamp);
+			const weekStart = new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay());
+			const weekKey = weekStart.toISOString().split('T')[0];
+			
+			if (!weeklyData.has(weekKey)) {
+				weeklyData.set(weekKey, []);
+			}
+			weeklyData.get(weekKey)!.push(entry);
+		}
+		
+		// Analyze each week
+		const weeks = Array.from(weeklyData.entries()).sort(([a], [b]) => a.localeCompare(b));
+		
+		for (const [weekStart, weekEntries] of weeks) {
+			const weekConversations = this.groupByConversation(weekEntries);
+			const weekEnd = new Date(weekStart);
+			weekEnd.setDate(weekEnd.getDate() + 6);
+			
+			const avgQuestionsPerDay = weekConversations.size / 7;
+			const avgComplexityScore = this.calculateAverageComplexity(weekEntries);
+			
+			const characteristics = [];
+			if (avgQuestionsPerDay > 5) characteristics.push('High activity period');
+			if (avgComplexityScore > 0.7) characteristics.push('Complex problem solving');
+			if (avgComplexityScore < 0.3) characteristics.push('Simple queries');
+			if (characteristics.length === 0) characteristics.push('Moderate usage');
+			
+			periods.push({
+				startDate: weekStart,
+				endDate: weekEnd.toISOString().split('T')[0],
+				metrics: {
+					avgQuestionsPerDay,
+					avgComplexityScore
+				},
+				characteristics
+			});
+		}
+		
+		// Determine overall trend
+		let overallTrend: 'improving' | 'declining' | 'stable' = 'stable';
+		if (periods.length >= 2) {
+			const firstHalf = periods.slice(0, Math.floor(periods.length / 2));
+			const secondHalf = periods.slice(Math.floor(periods.length / 2));
+			
+			const firstAvgComplexity = firstHalf.reduce((sum, p) => sum + p.metrics.avgComplexityScore, 0) / firstHalf.length;
+			const secondAvgComplexity = secondHalf.reduce((sum, p) => sum + p.metrics.avgComplexityScore, 0) / secondHalf.length;
+			
+			if (secondAvgComplexity > firstAvgComplexity * 1.1) {
+				overallTrend = 'improving';
+			} else if (secondAvgComplexity < firstAvgComplexity * 0.9) {
+				overallTrend = 'declining';
+			}
+		}
+		
+		const insights = [
+			periods.length > 4 ? 'Sufficient data for trend analysis' : 'Limited data for trends',
+			overallTrend === 'improving' ? 'Complexity of tasks is increasing over time' :
+			overallTrend === 'declining' ? 'Tasks are becoming simpler over time' :
+			'Consistent usage patterns maintained'
+		];
+		
+		return {
+			periods,
+			overallTrend,
+			insights
+		};
+	}
+
+	analyzeTaskSwitchingPatterns(entries: UsageEntry[]) {
+		const conversations = this.groupByConversation(entries);
+		
+		// Analyze switching patterns
+		const conversationTimestamps = Array.from(conversations.entries())
+			.map(([id, convEntries]) => ({
+				id,
+				startTime: new Date(convEntries[0].timestamp).getTime(),
+				endTime: new Date(convEntries[convEntries.length - 1].timestamp).getTime(),
+				type: this.classifyTaskType(convEntries)
+			}))
+			.sort((a, b) => a.startTime - b.startTime);
+		
+		// Calculate switching metrics
+		let totalSwitches = 0;
+		let totalTimeBetweenSwitches = 0;
+		let rapidSwitchingPeriods = 0;
+		
+		for (let i = 1; i < conversationTimestamps.length; i++) {
+			const current = conversationTimestamps[i];
+			const previous = conversationTimestamps[i - 1];
+			
+			if (current.type !== previous.type) {
+				totalSwitches++;
+				const timeBetween = current.startTime - previous.endTime;
+				totalTimeBetweenSwitches += timeBetween;
+				
+				// Rapid switching: less than 30 minutes
+				if (timeBetween < 30 * 60 * 1000) {
+					rapidSwitchingPeriods++;
+				}
+			}
+		}
+		
+		const avgTimeBetweenSwitches = totalSwitches > 0 ? totalTimeBetweenSwitches / totalSwitches / (60 * 1000) : 0; // minutes
+		
+		// Analyze task clusters
+		const taskClusters = this.groupTasksByType(conversationTimestamps);
+		
+		// Calculate efficiency metrics
+		const avgTaskCompletionTime = conversationTimestamps.reduce((sum, conv) => 
+			sum + (conv.endTime - conv.startTime), 0) / conversationTimestamps.length / (60 * 1000); // minutes
+		
+		const multitaskingEfficiency = totalSwitches > 0 ? 
+			Math.max(0, 1 - (rapidSwitchingPeriods / totalSwitches)) : 1;
+		
+		const focusedSessionDuration = this.calculateLongestFocusedSession(conversationTimestamps);
+		const optimalBatchSize = Math.ceil(Math.sqrt(conversations.size));
+		
+		// Generate recommendations
+		const recommendations = [];
+		if (rapidSwitchingPeriods > totalSwitches * 0.5) {
+			recommendations.push('Consider batching similar tasks to reduce context switching');
+		}
+		if (focusedSessionDuration > 2 * 60) { // 2 hours
+			recommendations.push('Good focused work sessions detected');
+		}
+		if (totalSwitches / conversationTimestamps.length > 0.3) {
+			recommendations.push('High task switching - consider dedicated time blocks');
+		}
+		if (recommendations.length === 0) {
+			recommendations.push('Well-balanced task switching patterns');
+		}
+		
+		return {
+			switchingMetrics: {
+				totalSwitches,
+				avgTimeBetweenSwitches,
+				rapidSwitchingPeriods
+			},
+			taskClusters,
+			efficiency: {
+				avgTaskCompletionTime,
+				multitaskingEfficiency,
+				focusedSessionDuration,
+				optimalBatchSize
+			},
+			recommendations
+		};
+	}
+
+	private groupByConversation(entries: UsageEntry[]): Map<string, UsageEntry[]> {
+		const conversations = new Map<string, UsageEntry[]>();
+		for (const entry of entries) {
+			if (!conversations.has(entry.conversationId)) {
+				conversations.set(entry.conversationId, []);
+			}
+			conversations.get(entry.conversationId)!.push(entry);
+		}
+		return conversations;
+	}
+
+	private calculateAverageComplexity(entries: UsageEntry[]): number {
+		if (entries.length === 0) return 0;
+		
+		const totalTokens = entries.reduce((sum, e) => sum + e.total_tokens, 0);
+		const avgTokens = totalTokens / entries.length;
+		
+		// Complexity scoring based on token usage
+		let complexity = 0;
+		if (avgTokens > 1000) complexity += 0.2;
+		if (avgTokens > 3000) complexity += 0.3;
+		if (avgTokens > 5000) complexity += 0.3;
+		if (avgTokens > 8000) complexity += 0.2;
+		
+		return Math.min(1.0, complexity);
+	}
+
+	private classifyTaskType(entries: UsageEntry[]): string {
+		const totalTokens = entries.reduce((sum, e) => sum + e.total_tokens, 0);
+		const avgTokens = totalTokens / entries.length;
+		const messageCount = entries.length;
+		
+		if (messageCount <= 2 && avgTokens < 1000) return 'quick-question';
+		if (avgTokens > 5000 || messageCount > 10) return 'complex-analysis';
+		if (avgTokens > 2000 && messageCount > 3) return 'problem-solving';
+		return 'general-assistance';
+	}
+
+	private groupTasksByType(conversations: Array<{ id: string; type: string; startTime: number; endTime: number }>) {
+		const clusters = new Map<string, { conversationIds: string[]; avgDuration: number; characteristics: string[] }>();
+		
+		for (const conv of conversations) {
+			if (!clusters.has(conv.type)) {
+				clusters.set(conv.type, {
+					conversationIds: [],
+					avgDuration: 0,
+					characteristics: []
+				});
+			}
+			
+			const cluster = clusters.get(conv.type)!;
+			cluster.conversationIds.push(conv.id);
+			
+			const duration = (conv.endTime - conv.startTime) / (60 * 1000); // minutes
+			cluster.avgDuration = (cluster.avgDuration * (cluster.conversationIds.length - 1) + duration) / cluster.conversationIds.length;
+		}
+		
+		// Add characteristics
+		for (const [type, cluster] of clusters) {
+			cluster.characteristics = [
+				`${cluster.conversationIds.length} conversations`,
+				`~${Math.round(cluster.avgDuration)} min average duration`,
+				type.replace('-', ' ')
+			];
+		}
+		
+		return Array.from(clusters.entries()).map(([type, data]) => ({
+			type,
+			conversationIds: data.conversationIds,
+			avgDuration: data.avgDuration,
+			characteristics: data.characteristics
+		}));
+	}
+
+	private calculateLongestFocusedSession(conversations: Array<{ type: string; startTime: number; endTime: number }>): number {
+		let maxFocusedDuration = 0;
+		let currentFocusedStart = conversations[0]?.startTime || 0;
+		let currentType = conversations[0]?.type;
+		
+		for (let i = 1; i < conversations.length; i++) {
+			const conv = conversations[i];
+			
+			if (conv.type !== currentType) {
+				// Focus session ended
+				const focusedDuration = (conversations[i - 1].endTime - currentFocusedStart) / (60 * 1000);
+				maxFocusedDuration = Math.max(maxFocusedDuration, focusedDuration);
+				
+				// Start new focus session
+				currentFocusedStart = conv.startTime;
+				currentType = conv.type;
+			}
+		}
+		
+		// Check final session
+		if (conversations.length > 0) {
+			const lastConv = conversations[conversations.length - 1];
+			const focusedDuration = (lastConv.endTime - currentFocusedStart) / (60 * 1000);
+			maxFocusedDuration = Math.max(maxFocusedDuration, focusedDuration);
+		}
+		
+		return maxFocusedDuration;
 	}
 }

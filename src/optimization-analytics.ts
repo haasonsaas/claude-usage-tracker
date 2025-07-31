@@ -472,4 +472,246 @@ export class OptimizationAnalyzer {
 			entries.reduce((sum, e) => sum + e.total_tokens, 0) / entries.length;
 		return entries.length > 5 && avgTokens > 2000 && avgTokens < 8000;
 	}
+
+	// Interface methods expected by tests
+	analyzeConversationClusters(entries: UsageEntry[]) {
+		const conversations = this.groupByConversation(entries);
+		const clusters: Array<{
+			conversationIds: string[];
+			characteristics: {
+				avgTokens: number;
+				avgCost: number;
+				complexity: number;
+			};
+			optimization: {
+				potentialSavings: number;
+				recommendation: string;
+			};
+		}> = [];
+		
+		// Group conversations by similarity (token count, cost, model)
+		const clusterMap = new Map<string, string[]>();
+		
+		for (const [conversationId, convEntries] of conversations) {
+			const avgTokens = convEntries.reduce((sum, e) => sum + e.total_tokens, 0) / convEntries.length;
+			const totalCost = convEntries.reduce((sum, e) => sum + calculateCost(e), 0);
+			const model = convEntries[0].model;
+			
+			// Create cluster key based on model and complexity
+			const complexity = this.calculateComplexityScore(convEntries);
+			const clusterKey = `${model}-${Math.floor(complexity * 4)}`; // 4 complexity buckets
+			
+			if (!clusterMap.has(clusterKey)) {
+				clusterMap.set(clusterKey, []);
+			}
+			clusterMap.get(clusterKey)!.push(conversationId);
+		}
+		
+		// Convert to cluster analysis format
+		for (const [clusterKey, conversationIds] of clusterMap) {
+			if (conversationIds.length < 2) continue; // Only clusters with multiple conversations
+			
+			const clusterEntries = conversationIds.flatMap(id => 
+				conversations.get(id) || []
+			);
+			
+			const avgTokens = clusterEntries.reduce((sum, e) => sum + e.total_tokens, 0) / clusterEntries.length;
+			const totalCost = clusterEntries.reduce((sum, e) => sum + calculateCost(e), 0);
+			const avgCost = totalCost / conversationIds.length;
+			const complexity = this.calculateComplexityScore(clusterEntries);
+			
+			// Calculate optimization potential
+			const isOpus = clusterKey.includes('opus');
+			const potentialSavings = isOpus && complexity < 0.5 ? totalCost * 0.78 : 0;
+			
+			clusters.push({
+				conversationIds,
+				characteristics: {
+					avgTokens,
+					avgCost,
+					complexity
+				},
+				optimization: {
+					potentialSavings,
+					recommendation: potentialSavings > 0 
+						? 'Switch to Sonnet for cost savings'
+						: 'Current model appropriate for complexity'
+				}
+			});
+		}
+		
+		return {
+			clusters,
+			totalConversations: conversations.size,
+			avgClusterSize: clusters.length > 0 ? clusters.reduce((sum, c) => sum + c.conversationIds.length, 0) / clusters.length : 0
+		};
+	}
+
+	identifyBatchProcessingOpportunities(entries: UsageEntry[]) {
+		const conversations = this.groupByConversation(entries);
+		const opportunities: Array<{
+			conversationIds: string[];
+			estimatedSavings: number;
+			batchingStrategy: string;
+			confidence: number;
+		}> = [];
+		
+		// Group conversations by temporal proximity and similarity
+		const sortedConversations = Array.from(conversations.entries())
+			.map(([id, convEntries]) => ({
+				id,
+				entries: convEntries,
+				timestamp: new Date(convEntries[0].timestamp).getTime(),
+				cost: convEntries.reduce((sum, e) => sum + calculateCost(e), 0),
+				tokens: convEntries.reduce((sum, e) => sum + e.total_tokens, 0)
+			}))
+			.sort((a, b) => a.timestamp - b.timestamp);
+		
+		// Find clusters of similar conversations within time windows
+		for (let i = 0; i < sortedConversations.length - 1; i++) {
+			const baseConv = sortedConversations[i];
+			const candidateGroup = [baseConv.id];
+			let groupCost = baseConv.cost;
+			
+			// Look for similar conversations within 24 hours
+			for (let j = i + 1; j < sortedConversations.length; j++) {
+				const candidate = sortedConversations[j];
+				const timeDiff = candidate.timestamp - baseConv.timestamp;
+				
+				if (timeDiff > 24 * 60 * 60 * 1000) break; // 24 hours
+				
+				// Check similarity (token count and cost)
+				const tokenRatio = Math.min(candidate.tokens, baseConv.tokens) / Math.max(candidate.tokens, baseConv.tokens);
+				const costRatio = Math.min(candidate.cost, baseConv.cost) / Math.max(candidate.cost, baseConv.cost);
+				
+				if (tokenRatio > 0.7 && costRatio > 0.7) {
+					candidateGroup.push(candidate.id);
+					groupCost += candidate.cost;
+				}
+			}
+			
+			// Only consider groups with multiple conversations and meaningful cost
+			if (candidateGroup.length >= 2 && groupCost > this.MIN_BATCH_COST) {
+				const estimatedSavings = groupCost * this.BATCH_API_DISCOUNT;
+				const confidence = Math.min(0.9, candidateGroup.length / 5); // Higher confidence with more conversations
+				
+				opportunities.push({
+					conversationIds: candidateGroup,
+					estimatedSavings,
+					batchingStrategy: `Batch ${candidateGroup.length} similar conversations`,
+					confidence
+				});
+			}
+		}
+		
+		// Remove overlapping opportunities (prefer larger groups)
+		const filtered = this.removeBatchOverlaps(opportunities);
+		
+		return {
+			opportunities: filtered,
+			totalPotentialSavings: filtered.reduce((sum, opp) => sum + opp.estimatedSavings, 0)
+		};
+	}
+
+	generateModelSwitchingRecommendations(entries: UsageEntry[]) {
+		const conversations = this.groupByConversation(entries);
+		const recommendations: Array<{
+			currentModel: string;
+			recommendedModel: string;
+			affectedConversations: number;
+			estimatedSavings: number;
+			confidence: number;
+			reasoning: string;
+		}> = [];
+		
+		// Analyze model usage patterns
+		const modelStats = new Map<string, { totalCost: number; conversationCount: number; avgComplexity: number }>();
+		
+		for (const [conversationId, convEntries] of conversations) {
+			const model = convEntries[0].model;
+			const cost = convEntries.reduce((sum, e) => sum + calculateCost(e), 0);
+			const complexity = this.calculateComplexityScore(convEntries);
+			
+			if (!modelStats.has(model)) {
+				modelStats.set(model, { totalCost: 0, conversationCount: 0, avgComplexity: 0 });
+			}
+			
+			const stats = modelStats.get(model)!;
+			stats.totalCost += cost;
+			stats.conversationCount += 1;
+			stats.avgComplexity = (stats.avgComplexity * (stats.conversationCount - 1) + complexity) / stats.conversationCount;
+		}
+		
+		// Generate recommendations for each model
+		for (const [model, stats] of modelStats) {
+			if (stats.conversationCount === 0) continue;
+			
+			const isOpus = model.includes('opus');
+			const isSonnet = model.includes('sonnet');
+			
+			// Suggest Sonnet for simple Opus usage
+			if (isOpus && stats.avgComplexity < 0.5 && stats.totalCost > 1.0) {
+				const estimatedSavings = stats.totalCost * 0.78; // 78% savings
+				recommendations.push({
+					currentModel: model,
+					recommendedModel: 'claude-3.5-sonnet-20241022',
+					affectedConversations: stats.conversationCount,
+					estimatedSavings,
+					confidence: 0.8,
+					reasoning: 'Low complexity tasks suitable for Sonnet with significant cost savings'
+				});
+			}
+			
+			// Suggest Opus for complex Sonnet usage
+			if (isSonnet && stats.avgComplexity > 0.7 && stats.totalCost > 2.0) {
+				const additionalCost = stats.totalCost * 4.5; // Opus costs ~5.5x more
+				recommendations.push({
+					currentModel: model,
+					recommendedModel: 'claude-opus-4-20250514',
+					affectedConversations: stats.conversationCount,
+					estimatedSavings: -additionalCost, // Negative = additional cost
+					confidence: 0.6,
+					reasoning: 'High complexity tasks may benefit from Opus capabilities'
+				});
+			}
+		}
+		
+		return {
+			recommendations: recommendations.sort((a, b) => b.estimatedSavings - a.estimatedSavings),
+			totalPotentialSavings: recommendations.filter(r => r.estimatedSavings > 0).reduce((sum, r) => sum + r.estimatedSavings, 0)
+		};
+	}
+
+	private removeBatchOverlaps(opportunities: Array<{ conversationIds: string[] }>) {
+		const used = new Set<string>();
+		const filtered = [];
+		
+		// Sort by group size (descending) to prefer larger batches
+		const sorted = [...opportunities].sort((a, b) => b.conversationIds.length - a.conversationIds.length);
+		
+		for (const opportunity of sorted) {
+			const hasOverlap = opportunity.conversationIds.some(id => used.has(id));
+			if (!hasOverlap) {
+				opportunity.conversationIds.forEach(id => used.add(id));
+				filtered.push(opportunity);
+			}
+		}
+		
+		return filtered;
+	}
+
+	private calculateComplexityScore(entries: UsageEntry[]): number {
+		if (entries.length === 0) return 0;
+		
+		const conversationLength = entries.length;
+		const avgTokensPerMessage = entries.reduce((sum, e) => sum + e.total_tokens, 0) / entries.length;
+		const totalCost = entries.reduce((sum, e) => sum + calculateCost(e), 0);
+		
+		let score = 0;
+		if (conversationLength > 10) score += 0.3;
+		if (avgTokensPerMessage > 5000) score += 0.4;
+		if (totalCost > 1.0) score += 0.3;
+		
+		return Math.min(1.0, score);
+	}
 }

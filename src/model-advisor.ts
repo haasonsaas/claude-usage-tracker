@@ -1,6 +1,7 @@
 import chalk from "chalk";
 import { MODEL_PRICING } from "./config.js";
 import { TASK_MODEL_MAPPING } from "./recommendation-config.js";
+import { getModelPricing } from "./config-loader.js";
 
 export interface TaskClassification {
 	taskType:
@@ -161,10 +162,31 @@ export class ModelAdvisor {
 		const baseRec = this.modelRecommendations[classification.taskType];
 		const recommendedModelPricing = MODEL_PRICING[baseRec.model];
 
-		const alternativeModel = Object.keys(MODEL_PRICING).find(
-			(m) => m !== baseRec.model,
-		) as keyof typeof MODEL_PRICING;
+		// Find a reasonable alternative model (Sonnet if we're using Opus, Opus if we're using Sonnet)
+		// Use the config loader directly since Object.keys on the proxy doesn't work in tests
+		const allModels = Object.keys(getModelPricing());
+		let alternativeModel: string;
+		
+		if (baseRec.model.includes('opus')) {
+			alternativeModel = allModels.find(m => m.includes('sonnet')) || allModels[0];
+		} else if (baseRec.model.includes('sonnet')) {
+			alternativeModel = allModels.find(m => m.includes('opus')) || allModels[0];
+		} else {
+			alternativeModel = allModels.find(m => m !== baseRec.model) || allModels[0];
+		}
+		
 		const alternativeModelPricing = MODEL_PRICING[alternativeModel];
+
+
+
+		// Ensure we have valid pricing data
+		if (!recommendedModelPricing || !alternativeModelPricing) {
+			return {
+				recommendedModel: baseRec.model as keyof typeof MODEL_PRICING,
+				confidence: classification.confidence,
+				reasoning: classification.reasoning + " (pricing data unavailable for cost comparison)",
+			};
+		}
 
 		// Estimate token usage (rough approximation)
 		const estimatedTokens = this.estimateTokenUsage(classification.taskType);

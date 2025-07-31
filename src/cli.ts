@@ -17,10 +17,12 @@ import {
 	formatRateLimitStatus,
 	formatWeeklySummary,
 } from "./formatters.js";
+import { DeepAnalyzer } from "./deep-analysis.js";
 import { ModelAdvisor } from "./model-advisor.js";
 import { OptimizationAnalyzer } from "./optimization-analytics.js";
 import { PatternAnalyzer } from "./pattern-analysis.js";
 import { PredictiveAnalyzer } from "./predictive-analytics.js";
+import { ResearchAnalyzer } from "./research-analytics.js";
 import { UsageWatcher } from "./watch-monitor.js";
 
 function handleError(error: unknown, isJsonMode = false): void {
@@ -564,10 +566,16 @@ program
 				
 				// Conversation length patterns
 				console.log(chalk.blue.bold("💬 Conversation Length Patterns"));
-				lengthPatterns.forEach(pattern => {
-					const trendIcon = pattern.trendDirection === "increasing" ? "📈" : pattern.trendDirection === "decreasing" ? "📉" : "📊";
-					console.log(`${pattern.lengthCategory}: ${pattern.frequency} conversations, avg ${pattern.messageCount} messages, $${pattern.avgCostPerMessage.toFixed(3)}/msg ${trendIcon}`);
-				});
+				console.log(`Quick Questions: ${lengthPatterns.conversationTypes.quickQuestions.count} conversations (avg ${lengthPatterns.avgLengthByType.quickQuestions} messages)`);
+				console.log(`Detailed Discussions: ${lengthPatterns.conversationTypes.detailedDiscussions.count} conversations (avg ${lengthPatterns.avgLengthByType.detailedDiscussions} messages)`);
+				console.log(`Deep Dives: ${lengthPatterns.conversationTypes.deepDives.count} conversations (avg ${lengthPatterns.avgLengthByType.deepDives} messages)`);
+				console.log(`Most Efficient: ${chalk.green(lengthPatterns.efficiencyInsights.mostEfficientType)}`);
+				if (lengthPatterns.recommendations?.length > 0) {
+					console.log(chalk.yellow("💡 Recommendations:"));
+					lengthPatterns.recommendations.forEach(rec => {
+						console.log(`  • ${rec}`);
+					});
+				}
 				console.log();
 
 				// Learning curve
@@ -600,6 +608,95 @@ program
 						if (pattern.recommendation) {
 							console.log(`  💡 ${pattern.recommendation}`);
 						}
+					});
+				}
+			}
+		} catch (error) {
+			handleError(error, options.json);
+		}
+	});
+
+program
+	.command("research")
+	.description("Advanced research analytics: conversation success, project ROI, correlations")
+	.option("--json", "Output as JSON")
+	.action(async (options) => {
+		try {
+			const entries = await loadUsageData();
+			if (entries.length === 0) {
+				if (options.json) {
+					console.log(JSON.stringify({ error: "No usage data found" }, null, 2));
+				} else {
+					console.log(chalk.yellow("No usage data found."));
+				}
+				return;
+			}
+
+			const analyzer = new ResearchAnalyzer();
+			const insights = analyzer.generateAdvancedInsights(entries);
+
+			if (options.json) {
+				console.log(JSON.stringify({
+					conversationSuccess: insights.conversationSuccess.slice(0, 10),
+					projectAnalysis: insights.projectAnalysis.slice(0, 5),
+					timeSeriesData: insights.timeSeriesData.slice(-30), // Last 30 days
+					cacheOptimization: insights.cacheOptimization,
+					promptingPatterns: insights.promptingPatterns,
+					correlationInsights: insights.correlationInsights
+				}, null, 2));
+			} else {
+				console.log(formatHeader("🔬 Research Analytics"));
+				
+				// Top performing conversations
+				console.log(chalk.blue.bold("🏆 Top Performing Conversations"));
+				insights.conversationSuccess.slice(0, 5).forEach((conv, i) => {
+					console.log(`${i + 1}. Success: ${(conv.successScore * 100).toFixed(1)}% | Efficiency: ${conv.efficiency.toFixed(0)} tokens/$ | ${conv.messageCount} msgs | ${conv.duration.toFixed(0)}min`);
+				});
+				console.log();
+
+				// Project ROI analysis
+				if (insights.projectAnalysis.length > 0) {
+					console.log(chalk.green.bold("📊 Project ROI Analysis"));
+					insights.projectAnalysis.slice(0, 3).forEach(project => {
+						console.log(`${project.projectPath}: ROI ${project.roi.toFixed(2)} | $${project.totalCost.toFixed(2)} | ${project.conversationCount} conversations | ${project.timeSpent.toFixed(1)}hrs`);
+						if (project.topics.length > 0) {
+							console.log(`  Topics: ${project.topics.join(", ")}`);
+						}
+					});
+					console.log();
+				}
+
+				// Cache optimization
+				console.log(chalk.cyan.bold("💾 Cache Optimization"));
+				console.log(`Cache hit rate: ${(insights.cacheOptimization.cacheHitRate * 100).toFixed(1)}%`);
+				console.log(`Cache savings: $${insights.cacheOptimization.cacheSavings.toFixed(2)}`);
+				if (insights.cacheOptimization.underutilizedConversations.length > 0) {
+					console.log(`Underutilized conversations: ${insights.cacheOptimization.underutilizedConversations.length}`);
+					const topMissed = insights.cacheOptimization.underutilizedConversations[0];
+					console.log(`  Top opportunity: $${topMissed.missedCachingOpportunity.toFixed(2)} potential savings`);
+				}
+				insights.cacheOptimization.recommendations.forEach(rec => console.log(`  💡 ${rec}`));
+				console.log();
+
+				// Prompting patterns
+				console.log(chalk.magenta.bold("📝 Prompting Insights"));
+				console.log(`Average prompt length: ${insights.promptingPatterns.avgPromptLength.toFixed(0)} tokens`);
+				if (insights.promptingPatterns.effectivePromptPatterns.length > 0) {
+					const best = insights.promptingPatterns.effectivePromptPatterns[0];
+					console.log(`Most effective pattern: ${best.pattern} prompts (${(best.successRate * 100).toFixed(1)}% success rate)`);
+				}
+				insights.promptingPatterns.optimalPromptingGuidelines.slice(0, 3).forEach(guideline => {
+					console.log(`  💡 ${guideline}`);
+				});
+				console.log();
+
+				// Correlation insights
+				if (insights.correlationInsights.length > 0) {
+					console.log(chalk.yellow.bold("🔗 Key Correlations"));
+					insights.correlationInsights.forEach(insight => {
+						const strength = Math.abs(insight.correlation);
+						const strengthText = strength > 0.5 ? "Strong" : strength > 0.3 ? "Moderate" : "Weak";
+						console.log(`${strengthText} correlation (${insight.correlation.toFixed(2)}): ${insight.insight}`);
 					});
 				}
 			}
