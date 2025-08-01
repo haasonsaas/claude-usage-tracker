@@ -29,10 +29,10 @@ export interface ProjectLengthProfile {
 		explanation: string;
 	};
 	efficiencyByLength: {
-		quick: { count: number; avgEfficiency: number; successRate: number };
-		medium: { count: number; avgEfficiency: number; successRate: number };
-		deep: { count: number; avgEfficiency: number; successRate: number };
-		marathon: { count: number; avgEfficiency: number; successRate: number };
+		quick: { count: number; avgEfficiency: number; successRate: number; avgCost: number; costEfficiency: number };
+		medium: { count: number; avgEfficiency: number; successRate: number; avgCost: number; costEfficiency: number };
+		deep: { count: number; avgEfficiency: number; successRate: number; avgCost: number; costEfficiency: number };
+		marathon: { count: number; avgEfficiency: number; successRate: number; avgCost: number; costEfficiency: number };
 	};
 	recommendations: string[];
 }
@@ -50,6 +50,17 @@ export interface ConversationLengthAnalysis {
 		medium: number;
 		deep: number;
 		marathon: number;
+	};
+	costAnalysis: {
+		totalCost: number;
+		avgCostPerConversation: number;
+		costByLength: {
+			quick: { totalCost: number; avgCost: number; costEfficiency: number };
+			medium: { totalCost: number; avgCost: number; costEfficiency: number };
+			deep: { totalCost: number; avgCost: number; costEfficiency: number };
+			marathon: { totalCost: number; avgCost: number; costEfficiency: number };
+		};
+		mostCostEfficient: string;
 	};
 	insights: string[];
 	recommendations: string[];
@@ -90,6 +101,7 @@ export class ConversationLengthAnalyzer {
 			overallOptimalRange: this.calculateOptimalRange(insights),
 			projectProfiles,
 			lengthDistribution: this.calculateLengthDistribution(insights),
+			costAnalysis: this.calculateCostAnalysis(insights),
 			insights: this.generateInsights(insights, projectProfiles),
 			recommendations: this.generateRecommendations(insights, projectProfiles),
 		};
@@ -313,8 +325,25 @@ export class ConversationLengthAnalyzer {
 					? items.filter((i) => i.successIndicators.topicResolved).length /
 						count
 					: 0;
+			
+			// Calculate cost metrics for this category
+			const totalCost = items.reduce((sum, i) => {
+				const conversationEntries = this.conversations.get(i.conversationId) || [];
+				return sum + conversationEntries.reduce((entrySum, entry) => 
+					entrySum + (entry.cost || entry.costUSD || 0), 0);
+			}, 0);
+			
+			const avgCost = count > 0 ? totalCost / count : 0;
+			const avgCostEfficiency = count > 0 ? 
+				items.reduce((sum, i) => sum + i.costEfficiency, 0) / count : 0;
 
-			result[category] = { count, avgEfficiency, successRate };
+			result[category] = { 
+				count, 
+				avgEfficiency, 
+				successRate,
+				avgCost,
+				costEfficiency: avgCostEfficiency
+			};
 		}
 
 		return result;
@@ -518,6 +547,76 @@ export class ConversationLengthAnalyzer {
 		};
 	}
 
+	private calculateCostAnalysis(insights: ConversationLengthInsight[]) {
+		if (insights.length === 0) {
+			return {
+				totalCost: 0,
+				avgCostPerConversation: 0,
+				costByLength: {
+					quick: { totalCost: 0, avgCost: 0, costEfficiency: 0 },
+					medium: { totalCost: 0, avgCost: 0, costEfficiency: 0 },
+					deep: { totalCost: 0, avgCost: 0, costEfficiency: 0 },
+					marathon: { totalCost: 0, avgCost: 0, costEfficiency: 0 },
+				},
+				mostCostEfficient: "medium",
+			};
+		}
+
+		// Calculate total cost across all conversations
+		const totalCost = insights.reduce((sum, insight) => {
+			const conversationEntries = this.conversations.get(insight.conversationId) || [];
+			return sum + conversationEntries.reduce((entrySum, entry) => 
+				entrySum + (entry.cost || entry.costUSD || 0), 0);
+		}, 0);
+
+		const avgCostPerConversation = totalCost / insights.length;
+
+		// Group by length category and calculate cost metrics
+		const groups = {
+			quick: insights.filter((i) => i.lengthCategory === "quick"),
+			medium: insights.filter((i) => i.lengthCategory === "medium"),
+			deep: insights.filter((i) => i.lengthCategory === "deep"),
+			marathon: insights.filter((i) => i.lengthCategory === "marathon"),
+		};
+
+		const costByLength = {} as any;
+		let bestCostEfficiency = 0;
+		let mostCostEfficient = "medium";
+
+		for (const [category, items] of Object.entries(groups)) {
+			const count = items.length;
+			
+			const categoryTotalCost = items.reduce((sum, insight) => {
+				const conversationEntries = this.conversations.get(insight.conversationId) || [];
+				return sum + conversationEntries.reduce((entrySum, entry) => 
+					entrySum + (entry.cost || entry.costUSD || 0), 0);
+			}, 0);
+			
+			const avgCost = count > 0 ? categoryTotalCost / count : 0;
+			const avgCostEfficiency = count > 0 ? 
+				items.reduce((sum, i) => sum + i.costEfficiency, 0) / count : 0;
+
+			costByLength[category] = {
+				totalCost: categoryTotalCost,
+				avgCost,
+				costEfficiency: avgCostEfficiency,
+			};
+
+			// Track most cost-efficient category
+			if (avgCostEfficiency > bestCostEfficiency && count > 0) {
+				bestCostEfficiency = avgCostEfficiency;
+				mostCostEfficient = category;
+			}
+		}
+
+		return {
+			totalCost,
+			avgCostPerConversation,
+			costByLength,
+			mostCostEfficient,
+		};
+	}
+
 	private generateInsights(
 		insights: ConversationLengthInsight[],
 		projectProfiles: ProjectLengthProfile[],
@@ -554,6 +653,47 @@ export class ConversationLengthAnalyzer {
 			generatedInsights.push(
 				`Your most successful conversations average ${Math.round(avgSuccessfulLength)} messages - you benefit from deeper exploration`,
 			);
+		}
+
+		// Cost efficiency insights
+		const totalCost = insights.reduce((sum, insight) => {
+			const conversationEntries = this.conversations.get(insight.conversationId) || [];
+			return sum + conversationEntries.reduce((entrySum, entry) => 
+				entrySum + (entry.cost || entry.costUSD || 0), 0);
+		}, 0);
+
+		if (totalCost > 0) {
+			const avgCost = totalCost / insights.length;
+			generatedInsights.push(
+				`Average cost per conversation: $${avgCost.toFixed(4)}`,
+			);
+
+			// Find most cost-efficient conversation length
+			const costByLength = {
+				quick: insights.filter((i) => i.lengthCategory === "quick"),
+				medium: insights.filter((i) => i.lengthCategory === "medium"),
+				deep: insights.filter((i) => i.lengthCategory === "deep"),
+				marathon: insights.filter((i) => i.lengthCategory === "marathon"),
+			};
+
+			let bestCostEfficiency = 0;
+			let bestCategory = "medium";
+
+			for (const [category, items] of Object.entries(costByLength)) {
+				if (items.length > 0) {
+					const avgCostEfficiency = items.reduce((sum, i) => sum + i.costEfficiency, 0) / items.length;
+					if (avgCostEfficiency > bestCostEfficiency) {
+						bestCostEfficiency = avgCostEfficiency;
+						bestCategory = category;
+					}
+				}
+			}
+
+			if (bestCostEfficiency > 0) {
+				generatedInsights.push(
+					`${bestCategory} conversations show the best cost efficiency (${Math.round(bestCostEfficiency)} tokens per dollar)`,
+				);
+			}
 		}
 
 		// Project-specific insights
@@ -612,6 +752,30 @@ export class ConversationLengthAnalyzer {
 			);
 		}
 
+		// Cost efficiency recommendations
+		const lowCostEfficiencyConversations = insights.filter(
+			(i) => i.costEfficiency < 1000, // Less than 1000 tokens per dollar
+		);
+		if (lowCostEfficiencyConversations.length >= insights.length * 0.3) {
+			recommendations.push(
+				"Consider optimizing conversation length for better cost efficiency",
+			);
+		}
+
+		// Expensive marathon conversations
+		const expensiveMarathons = marathonConversations.filter((conv) => {
+			const conversationEntries = this.conversations.get(conv.conversationId) || [];
+			const cost = conversationEntries.reduce((sum, entry) => 
+				sum + (entry.cost || entry.costUSD || 0), 0);
+			return cost > 0.50; // More than $0.50 per conversation
+		});
+
+		if (expensiveMarathons.length > 0) {
+			recommendations.push(
+				`${expensiveMarathons.length} marathon conversation(s) cost over $0.50 each - consider breaking these down`,
+			);
+		}
+
 		// Project-specific recommendations
 		const projectsWithLowSuccess = projectProfiles.filter((p) => {
 			const overallSuccess =
@@ -625,6 +789,21 @@ export class ConversationLengthAnalyzer {
 		for (const project of projectsWithLowSuccess) {
 			recommendations.push(
 				`Consider adjusting approach for ${project.project} - success rate could be improved`,
+			);
+		}
+
+		// Cost-based project recommendations
+		const projectsWithHighCosts = projectProfiles.filter((p) => {
+			const avgCost = Object.values(p.efficiencyByLength).reduce(
+				(sum, cat) => sum + cat.avgCost * cat.count,
+				0,
+			) / p.totalConversations;
+			return avgCost > 0.25; // More than $0.25 average per conversation
+		});
+
+		for (const project of projectsWithHighCosts) {
+			recommendations.push(
+				`${project.project} has high average conversation costs - consider shorter, more focused interactions`,
 			);
 		}
 

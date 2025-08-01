@@ -942,19 +942,19 @@ program
 						console.log(`  Efficiency by length:`);
 						if (eff.quick.count > 0)
 							console.log(
-								`    Quick: ${eff.quick.successRate.toFixed(1)}% success rate`,
+								`    Quick: ${eff.quick.successRate.toFixed(1)}% success, $${eff.quick.avgCost.toFixed(4)} avg cost`,
 							);
 						if (eff.medium.count > 0)
 							console.log(
-								`    Medium: ${eff.medium.successRate.toFixed(1)}% success rate`,
+								`    Medium: ${eff.medium.successRate.toFixed(1)}% success, $${eff.medium.avgCost.toFixed(4)} avg cost`,
 							);
 						if (eff.deep.count > 0)
 							console.log(
-								`    Deep: ${eff.deep.successRate.toFixed(1)}% success rate`,
+								`    Deep: ${eff.deep.successRate.toFixed(1)}% success, $${eff.deep.avgCost.toFixed(4)} avg cost`,
 							);
 						if (eff.marathon.count > 0)
 							console.log(
-								`    Marathon: ${eff.marathon.successRate.toFixed(1)}% success rate`,
+								`    Marathon: ${eff.marathon.successRate.toFixed(1)}% success, $${eff.marathon.avgCost.toFixed(4)} avg cost`,
 							);
 
 						// Project recommendations
@@ -965,6 +965,44 @@ program
 							);
 						}
 					});
+				}
+
+				// Cost analysis
+				if (analysis.costAnalysis && analysis.costAnalysis.totalCost > 0) {
+					console.log(chalk.blue.bold("\n💰 Cost Analysis"));
+					console.log(
+						`Total cost: ${chalk.green(`$${analysis.costAnalysis.totalCost.toFixed(4)}`)}`,
+					);
+					console.log(
+						`Average per conversation: ${chalk.cyan(`$${analysis.costAnalysis.avgCostPerConversation.toFixed(4)}`)}`,
+					);
+					console.log(
+						`Most cost-efficient: ${chalk.yellow(analysis.costAnalysis.mostCostEfficient)} conversations`,
+					);
+
+					console.log(chalk.blue.bold("\n💸 Cost by Length Category"));
+					const costByLength = analysis.costAnalysis.costByLength;
+					
+					if (costByLength.quick.totalCost > 0) {
+						console.log(
+							`Quick: $${costByLength.quick.totalCost.toFixed(4)} total, $${costByLength.quick.avgCost.toFixed(4)} avg, ${Math.round(costByLength.quick.costEfficiency)} tokens/$`,
+						);
+					}
+					if (costByLength.medium.totalCost > 0) {
+						console.log(
+							`Medium: $${costByLength.medium.totalCost.toFixed(4)} total, $${costByLength.medium.avgCost.toFixed(4)} avg, ${Math.round(costByLength.medium.costEfficiency)} tokens/$`,
+						);
+					}
+					if (costByLength.deep.totalCost > 0) {
+						console.log(
+							`Deep: $${costByLength.deep.totalCost.toFixed(4)} total, $${costByLength.deep.avgCost.toFixed(4)} avg, ${Math.round(costByLength.deep.costEfficiency)} tokens/$`,
+						);
+					}
+					if (costByLength.marathon.totalCost > 0) {
+						console.log(
+							`Marathon: $${costByLength.marathon.totalCost.toFixed(4)} total, $${costByLength.marathon.avgCost.toFixed(4)} avg, ${Math.round(costByLength.marathon.costEfficiency)} tokens/$`,
+						);
+					}
 				}
 
 				// Overall insights
