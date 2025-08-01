@@ -1,6 +1,6 @@
 {
   "name": "claude-usage-tracker",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Advanced analytics for Claude Code usage with cost optimization, conversation length analysis, and rate limit tracking",
   "main": "dist/index.js",
   "type": "module",
@@ -11,8 +11,8 @@
     "LICENSE"
   ],
   "bin": {
-    "claude-usage": "./dist/cli.js",
-    "claude-usage-tracker": "./dist/cli.js"
+    "claude-usage": "dist/cli.js",
+    "claude-usage-tracker": "dist/cli.js"
   },
   "scripts": {
     "build": "tsc",
@@ -38,7 +38,7 @@
     "tracking",
     "analytics",
     "cost-optimization",
-    "conversation-analysis", 
+    "conversation-analysis",
     "rate-limit",
     "cli",
     "monitoring",
