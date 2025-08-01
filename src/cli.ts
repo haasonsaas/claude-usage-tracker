@@ -24,6 +24,7 @@ import { PatternAnalyzer } from "./pattern-analysis.js";
 import { PredictiveAnalyzer } from "./predictive-analytics.js";
 import { ResearchAnalyzer } from "./research-analytics.js";
 import { ConversationLengthAnalyzer } from "./conversation-length-analytics.js";
+import { ExportManager, type ExportOptions } from "./export-manager.js";
 import { UsageWatcher } from "./watch-monitor.js";
 
 function handleError(error: unknown, isJsonMode = false): void {
@@ -1015,6 +1016,70 @@ program
 				if (analysis.recommendations.length > 0) {
 					console.log(chalk.yellow.bold("\n💡 Recommendations"));
 					analysis.recommendations.forEach((rec) => console.log(`• ${rec}`));
+				}
+			}
+		} catch (error) {
+			handleError(error, options.json);
+		}
+	});
+
+program
+	.command("export")
+	.description("Export usage data in various formats")
+	.option("-f, --format <format>", "Export format: csv, json, summary", "csv")
+	.option("-o, --output <file>", "Output filename (auto-generated if not specified)")
+	.option("-s, --start <date>", "Start date (YYYY-MM-DD)")
+	.option("-e, --end <date>", "End date (YYYY-MM-DD)")
+	.option("-p, --project <name>", "Filter by project name")
+	.option("-t, --template <type>", "Template: billing, efficiency, analytics, raw", "raw")
+	.option("--json", "Output export summary as JSON")
+	.action(async (options) => {
+		try {
+			const entries = await loadUsageData();
+			if (entries.length === 0) {
+				if (options.json) {
+					console.log(JSON.stringify({ error: "No usage data found" }, null, 2));
+				} else {
+					console.log(chalk.yellow("No usage data found."));
+				}
+				return;
+			}
+
+			const exportOptions: ExportOptions = {
+				format: options.format,
+				output: options.output,
+				startDate: options.start,
+				endDate: options.end,
+				project: options.project,
+				template: options.template
+			};
+
+			const exportManager = new ExportManager(entries);
+			const summary = exportManager.export(exportOptions);
+
+			if (options.json) {
+				console.log(JSON.stringify(summary, null, 2));
+			} else {
+				console.log(formatHeader("📤 Export Complete"));
+				console.log(`${chalk.green("✓")} File: ${summary.exportedAt.split('T')[0]}`);
+				console.log(`${chalk.green("✓")} Exported: ${chalk.cyan(summary.totalEntries.toLocaleString())} entries`);
+				console.log(`${chalk.green("✓")} Date range: ${chalk.yellow(summary.dateRange.start)} to ${chalk.yellow(summary.dateRange.end)}`);
+				console.log(`${chalk.green("✓")} Total cost: ${chalk.green(`$${summary.totalCost.toFixed(4)}`)}`);
+				console.log(`${chalk.green("✓")} Total tokens: ${chalk.cyan(summary.totalTokens.toLocaleString())}`);
+				console.log(`${chalk.green("✓")} Projects: ${summary.projects.length} (${summary.projects.slice(0, 3).join(", ")}${summary.projects.length > 3 ? "..." : ""})`);
+				console.log(`${chalk.green("✓")} File size: ${chalk.gray(summary.fileSize)}`);
+				
+				// Show some helpful next steps
+				console.log(chalk.blue.bold("\n💡 Next Steps:"));
+				if (options.format === "csv") {
+					console.log("• Open in Excel/Google Sheets for analysis");
+					console.log("• Import into accounting software for billing");
+				} else if (options.format === "json") {
+					console.log("• Use for programmatic analysis or data pipeline");
+					console.log("• Import into business intelligence tools");
+				} else {
+					console.log("• Review summary for insights and planning");
+					console.log("• Share with stakeholders for budget discussions");
 				}
 			}
 		} catch (error) {
