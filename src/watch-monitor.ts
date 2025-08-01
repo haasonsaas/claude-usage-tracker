@@ -3,7 +3,7 @@ import { stat } from "node:fs/promises";
 import chalk from "chalk";
 import { calculateCost, getCurrentWeekUsage } from "./analyzer.js";
 import { CLAUDE_DATA_PATHS } from "./config.js";
-import { loadUsageData } from "./data-loader.js";
+import { IncrementalDataLoader } from "./incremental-loader.js";
 import type { UsageEntry } from "./types.js";
 
 export interface LiveStats {
@@ -34,6 +34,8 @@ export class UsageWatcher {
 	private updateInterval: NodeJS.Timeout | null = null;
 	private conversationHistory: ConversationEvent[] = [];
 	private lastProcessedTime = new Date();
+	private dataLoader = new IncrementalDataLoader();
+	private allEntries: UsageEntry[] = []; // Cache all entries for stats calculation
 
 	async startWatching(
 		callback: (
@@ -73,6 +75,11 @@ export class UsageWatcher {
 			}
 		}
 
+		// Initial load - get all historical data
+		console.log(chalk.dim("Loading historical data..."));
+		this.allEntries = await this.dataLoader.loadAllData();
+		console.log(chalk.dim(`Loaded ${this.allEntries.length} historical entries`));
+		
 		// Initial stats calculation
 		await this.updateStats();
 		if (this.lastStats) {
@@ -95,33 +102,52 @@ export class UsageWatcher {
 			// Debounce rapid file changes
 			await new Promise((resolve) => setTimeout(resolve, 500));
 
-			const entries = await loadUsageData();
-			const newEntries = entries.filter(
-				(entry) => new Date(entry.timestamp) > this.lastProcessedTime,
-			);
+			// Get only new entries using incremental loader
+			const newEntries = await this.dataLoader.loadNewEntries();
+			
+			if (newEntries.length > 0) {
+				console.log(chalk.dim(`Processing ${newEntries.length} new entries...`));
+				
+				// Add new entries to our cache
+				this.allEntries.push(...newEntries);
+				
+				// Sort to maintain chronological order
+				this.allEntries.sort(
+					(a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+				);
+				
+				// Memory management: keep only last 30 days of data in memory
+				const thirtyDaysAgo = new Date();
+				thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+				this.allEntries = this.allEntries.filter(
+					entry => new Date(entry.timestamp) >= thirtyDaysAgo
+				);
+				
+				// Process new entries for conversation history
+				for (const entry of newEntries) {
+					const conversationEvent: ConversationEvent = {
+						conversationId: entry.conversationId,
+						model: entry.model,
+						cost: calculateCost(entry),
+						tokens: entry.total_tokens,
+						timestamp: new Date(entry.timestamp),
+						efficiency: this.calculateEfficiency(entry),
+					};
 
-			for (const entry of newEntries) {
-				const conversationEvent: ConversationEvent = {
-					conversationId: entry.conversationId,
-					model: entry.model,
-					cost: calculateCost(entry),
-					tokens: entry.total_tokens,
-					timestamp: new Date(entry.timestamp),
-					efficiency: this.calculateEfficiency(entry),
-				};
+					this.conversationHistory.push(conversationEvent);
 
-				this.conversationHistory.push(conversationEvent);
-
-				// Keep only last 50 conversations in memory
-				if (this.conversationHistory.length > 50) {
-					this.conversationHistory = this.conversationHistory.slice(-50);
+					// Keep only last 50 conversations in memory
+					if (this.conversationHistory.length > 50) {
+						this.conversationHistory = this.conversationHistory.slice(-50);
+					}
 				}
-			}
 
-			this.lastProcessedTime = new Date();
-			await this.updateStats();
+				this.lastProcessedTime = new Date();
+				await this.updateStats();
+			}
 		} catch (_error) {
 			// Silently handle file reading errors during updates
+			console.error(chalk.red("Error processing file change:"), _error);
 		}
 	}
 
@@ -142,7 +168,7 @@ export class UsageWatcher {
 
 	private async updateStats(): Promise<void> {
 		try {
-			const entries = await loadUsageData();
+			const entries = this.allEntries; // Use cached entries
 			const now = new Date();
 			const todayStart = new Date(
 				now.getFullYear(),
@@ -229,6 +255,11 @@ export class UsageWatcher {
 			clearInterval(this.updateInterval);
 			this.updateInterval = null;
 		}
+		
+		// Clear cache to free memory
+		this.allEntries = [];
+		this.conversationHistory = [];
+		this.dataLoader.clearCache();
 
 		console.log(chalk.yellow("⏹️  Live monitoring stopped"));
 	}
