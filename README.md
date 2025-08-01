@@ -16,7 +16,24 @@
 
 ## 🚀 Installation
 
-### From Source (Current)
+### NPX (Recommended)
+
+```bash
+# Run directly without installation
+npx claude-usage-tracker status
+
+# Or use the shorter alias
+npx claude-usage-tracker help
+```
+
+### Global Installation
+
+```bash
+npm install -g claude-usage-tracker
+claude-usage status
+```
+
+### From Source
 
 ```bash
 git clone https://github.com/haasonsaas/claude-usage-tracker.git
@@ -25,29 +42,29 @@ npm install
 npm run build
 ```
 
-### Quick Commands
+## 📱 Quick Commands
 
 ```bash
 # Check current status
-node dist/cli.js status
+npx claude-usage-tracker status
 
 # View daily breakdown
-node dist/cli.js daily --days 7
+npx claude-usage-tracker daily --days 7
 
 # Compare all plans
-node dist/cli.js check-limits
+npx claude-usage-tracker check-limits
 
 # Get efficiency insights
-node dist/cli.js insights
+npx claude-usage-tracker insights
 
 # Get model recommendation
-node dist/cli.js recommend "Write a REST API"
+npx claude-usage-tracker recommend "Write a REST API"
 
 # Live monitoring (press Ctrl+C to stop)
-node dist/cli.js watch
+npx claude-usage-tracker watch
 
-# Analyze conversation length patterns
-node dist/cli.js length
+# Analyze conversation length patterns with cost insights
+npx claude-usage-tracker length --days 30
 ```
 
 ## Usage
