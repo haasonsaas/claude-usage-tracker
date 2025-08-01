@@ -4,6 +4,7 @@ import chalk from "chalk";
 import { calculateCost, getCurrentWeekUsage } from "./analyzer.js";
 import { CLAUDE_DATA_PATHS } from "./config.js";
 import { IncrementalDataLoader } from "./incremental-loader.js";
+import { TerminalCharts } from "./terminal-charts.js";
 import type { UsageEntry } from "./types.js";
 
 export interface LiveStats {
@@ -37,6 +38,8 @@ export class UsageWatcher {
 	private lastProcessedTime = new Date();
 	private dataLoader = new IncrementalDataLoader();
 	private allEntries: UsageEntry[] = []; // Cache all entries for stats calculation
+	private tokenHistory: number[] = []; // Track token usage over time for sparkline
+	private hourlyUsage: number[] = Array(24).fill(0); // Track usage by hour
 
 	async startWatching(
 		callback: (
@@ -81,6 +84,20 @@ export class UsageWatcher {
 		console.log(chalk.dim("Loading historical data..."));
 		this.allEntries = await this.dataLoader.loadAllData();
 		console.log(chalk.dim(`Loaded ${this.allEntries.length} historical entries`));
+		
+		// Initialize hourly usage from today's data
+		const now = new Date();
+		const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+		const todayEntries = this.allEntries.filter(
+			entry => new Date(entry.timestamp) >= todayStart
+		);
+		
+		// Reset hourly usage and populate with today's data
+		this.hourlyUsage = Array(24).fill(0);
+		for (const entry of todayEntries) {
+			const hour = new Date(entry.timestamp).getHours();
+			this.hourlyUsage[hour] += entry.total_tokens;
+		}
 		
 		// Initial stats calculation
 		await this.updateStats();
@@ -146,8 +163,21 @@ export class UsageWatcher {
 
 				// Debug: show what was added
 				const totalNewCost = newEntries.reduce((sum, e) => sum + calculateCost(e), 0);
+				const totalNewTokens = newEntries.reduce((sum, e) => sum + e.total_tokens, 0);
 				console.log(chalk.green(`✅ Added ${newEntries.length} entries, cost: $${totalNewCost.toFixed(4)}`));
 				console.log(chalk.blue(`📊 Total entries in memory: ${this.allEntries.length}`));
+
+				// Update token history for sparkline
+				this.tokenHistory.push(totalNewTokens);
+				if (this.tokenHistory.length > 50) {
+					this.tokenHistory = this.tokenHistory.slice(-50);
+				}
+
+				// Update hourly usage
+				for (const entry of newEntries) {
+					const hour = new Date(entry.timestamp).getHours();
+					this.hourlyUsage[hour] += entry.total_tokens;
+				}
 
 				this.lastProcessedTime = new Date();
 				await this.updateStats();
@@ -328,6 +358,37 @@ export class UsageWatcher {
 			output += `Cost: ${chalk.green(`$${stats.lastConversationCost.toFixed(4)}`)}\n\n`;
 		}
 
+		// Token usage sparkline
+		if (this.tokenHistory.length > 5) {
+			output += chalk.cyan.bold("📈 Token Usage Trend\n");
+			const sparkline = TerminalCharts.sparkline(this.tokenHistory, 40, {
+				color: (value, max) => {
+					if (value > max * 0.8) return chalk.red;
+					if (value > max * 0.5) return chalk.yellow;
+					return chalk.green;
+				},
+			});
+			output += `${sparkline}\n\n`;
+		}
+
+		// Model usage distribution
+		const modelUsage = this.getModelUsageDistribution();
+		if (modelUsage.length > 0) {
+			output += chalk.cyan.bold("🎯 Model Usage Distribution\n");
+			const barChart = TerminalCharts.barChart(modelUsage, 50);
+			barChart.forEach((line) => (output += line + "\n"));
+			output += "\n";
+		}
+
+		// Hourly heat map
+		output += chalk.cyan.bold("🕐 24-Hour Usage Pattern\n");
+		const heatMap = TerminalCharts.heatMap(this.hourlyUsage, {
+			width: 24,
+			showLabels: true,
+		});
+		heatMap.forEach((line) => (output += line + "\n"));
+		output += "\n";
+
 		// Recent conversations
 		if (recentConversations.length > 0) {
 			output += chalk.cyan.bold("📝 Recent Activity\n");
@@ -396,5 +457,47 @@ export class UsageWatcher {
 		if (diffHours < 24) return `${diffHours}hr ago`;
 
 		return timestamp.toLocaleDateString();
+	}
+
+	private getModelUsageDistribution(): Array<{
+		label: string;
+		value: number;
+		color?: typeof chalk;
+	}> {
+		const now = new Date();
+		const todayStart = new Date(
+			now.getFullYear(),
+			now.getMonth(),
+			now.getDate(),
+		);
+
+		const todayEntries = this.allEntries.filter(
+			(entry) => new Date(entry.timestamp) >= todayStart,
+		);
+
+		const sonnetTokens = todayEntries
+			.filter((e) => e.model.includes("sonnet"))
+			.reduce((sum, e) => sum + e.total_tokens, 0);
+
+		const opusTokens = todayEntries
+			.filter((e) => e.model.includes("opus"))
+			.reduce((sum, e) => sum + e.total_tokens, 0);
+
+		const totalTokens = sonnetTokens + opusTokens;
+
+		if (totalTokens === 0) return [];
+
+		return [
+			{
+				label: "Sonnet 4",
+				value: sonnetTokens,
+				color: chalk.blue,
+			},
+			{
+				label: "Opus 4",
+				value: opusTokens,
+				color: chalk.magenta,
+			},
+		];
 	}
 }
