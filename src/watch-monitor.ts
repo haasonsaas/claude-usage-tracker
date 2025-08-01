@@ -40,6 +40,8 @@ export class UsageWatcher {
 	private allEntries: UsageEntry[] = []; // Cache all entries for stats calculation
 	private tokenHistory: number[] = []; // Track token usage over time for sparkline
 	private hourlyUsage: number[] = Array(24).fill(0); // Track usage by hour
+	private dailyCosts: Array<{ date: string; cost: number }> = []; // Track daily costs for weekly trend
+	private fiveMinuteTokens: number[] = []; // Track tokens per 5-minute interval
 
 	async startWatching(
 		callback: (
@@ -98,6 +100,12 @@ export class UsageWatcher {
 			const hour = new Date(entry.timestamp).getHours();
 			this.hourlyUsage[hour] += entry.total_tokens;
 		}
+		
+		// Initialize token history with recent activity (last 2 hours in 5-minute intervals)
+		this.initializeTokenHistory();
+		
+		// Initialize daily costs for the week
+		this.initializeDailyCosts();
 		
 		// Initial stats calculation
 		await this.updateStats();
@@ -358,26 +366,47 @@ export class UsageWatcher {
 			output += `Cost: ${chalk.green(`$${stats.lastConversationCost.toFixed(4)}`)}\n\n`;
 		}
 
-		// Token usage sparkline
-		if (this.tokenHistory.length > 5) {
-			output += chalk.cyan.bold("📈 Token Usage Trend\n");
-			const sparkline = TerminalCharts.sparkline(this.tokenHistory, 40, {
+		// Token usage sparkline (last 2 hours)
+		output += chalk.cyan.bold("📈 Token Usage Trend (2hr)\n");
+		const sparkline = TerminalCharts.sparkline(
+			this.tokenHistory.length > 0 ? this.tokenHistory : [0], 
+			50, 
+			{
 				color: (value, max) => {
 					if (value > max * 0.8) return chalk.red;
 					if (value > max * 0.5) return chalk.yellow;
 					return chalk.green;
 				},
-			});
-			output += `${sparkline}\n\n`;
-		}
+			}
+		);
+		output += `${sparkline}\n`;
+		output += chalk.gray(`Each point = 5 min | Min: ${Math.min(...this.tokenHistory).toLocaleString()} | Max: ${Math.max(...this.tokenHistory).toLocaleString()} tokens\n\n`);
 
 		// Model usage distribution
 		const modelUsage = this.getModelUsageDistribution();
 		if (modelUsage.length > 0) {
 			output += chalk.cyan.bold("🎯 Model Usage Distribution\n");
-			const barChart = TerminalCharts.barChart(modelUsage, 50);
+			const barChart = TerminalCharts.barChart(modelUsage, 50, { showPercentageOfTotal: true });
 			barChart.forEach((line) => (output += line + "\n"));
 			output += "\n";
+		}
+
+		// Weekly cost trend
+		if (this.dailyCosts.length > 0) {
+			output += chalk.cyan.bold("📊 Weekly Cost Trend\n");
+			const dailyValues = this.dailyCosts.map(d => d.cost);
+			const weekChart = TerminalCharts.lineChart(dailyValues, 50, 5, {
+				showAxes: true,
+				color: chalk.yellow,
+			});
+			weekChart.forEach((line) => (output += line + "\n"));
+			
+			// Add day labels
+			const dayLabels = this.dailyCosts.map(d => {
+				const date = new Date(d.date);
+				return date.toLocaleDateString('en-US', { weekday: 'short' });
+			});
+			output += chalk.gray("     " + dayLabels.map(l => l.padEnd(7)).join("") + "\n\n");
 		}
 
 		// Hourly heat map
@@ -415,16 +444,47 @@ export class UsageWatcher {
 			output += "\n";
 		}
 
+		// Budget projections and warnings
+		output += chalk.cyan.bold("💰 Budget Analysis\n");
+		const projections = this.calculateProjections(stats);
+		
+		// Current pace
+		output += `Daily average: ${chalk.yellow(`$${projections.dailyAverage.toFixed(2)}`)}\n`;
+		output += `Weekly projection: ${chalk.yellow(`$${projections.weeklyProjection.toFixed(2)}`)}\n`;
+		output += `Monthly projection: ${chalk.yellow(`$${projections.monthlyProjection.toFixed(2)}`)}\n\n`;
+		
+		// Budget warnings
+		if (projections.monthlyProjection > 1000) {
+			output += chalk.red.bold("🚨 BUDGET ALERT: Monthly projection exceeds $1,000!\n");
+			output += chalk.red(`At current pace, you'll spend $${projections.monthlyProjection.toFixed(0)} this month\n\n`);
+		} else if (projections.weeklyProjection > 500) {
+			output += chalk.yellow.bold("⚠️  SPENDING WARNING: High weekly spend detected\n");
+			output += chalk.yellow(`Consider using Sonnet 4 more often to reduce costs\n\n`);
+		}
+		
+		// Rate limit warning based on weekly usage
+		if (stats.weekCost > 150) {
+			const percentOfTypicalBudget = (stats.weekCost / 200) * 100;
+			output += chalk.red.bold(`📊 USAGE ALERT: ${percentOfTypicalBudget.toFixed(0)}% of typical weekly budget used\n`);
+			
+			if (percentOfTypicalBudget > 100) {
+				output += chalk.red(`You've exceeded a typical weekly budget by ${(percentOfTypicalBudget - 100).toFixed(0)}%\n\n`);
+			}
+		}
+		
 		// Tips and alerts
 		if (stats.burnRate > 50) {
-			output += chalk.red.bold("⚠️  HIGH BURN RATE ALERT\n");
+			output += chalk.red.bold("🔥 HIGH BURN RATE ALERT\n");
 			output += chalk.red(
-				"Consider switching to Sonnet 4 for simpler tasks\n\n",
+				"Your usage is 50% higher than your average - slow down!\n\n",
 			);
-		} else if (stats.averageCostPerConversation > 50) {
-			output += chalk.yellow.bold("💡 EFFICIENCY TIP\n");
+		} else if (stats.averageCostPerConversation > 20) {
+			output += chalk.yellow.bold("💡 OPTIMIZATION TIP\n");
 			output += chalk.yellow(
-				"Average conversation cost is high - consider breaking down complex tasks\n\n",
+				`Average cost per conversation: $${stats.averageCostPerConversation.toFixed(2)}\n`,
+			);
+			output += chalk.yellow(
+				"Consider using Sonnet 4 for simpler tasks to reduce costs\n\n",
 			);
 		}
 
@@ -499,5 +559,98 @@ export class UsageWatcher {
 				color: chalk.magenta,
 			},
 		];
+	}
+
+	private initializeTokenHistory(): void {
+		const now = new Date();
+		const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+		
+		// Create 5-minute buckets for the last 2 hours
+		const buckets: number[] = Array(24).fill(0); // 24 five-minute intervals
+		
+		const recentEntries = this.allEntries.filter(
+			entry => new Date(entry.timestamp) >= twoHoursAgo
+		);
+		
+		recentEntries.forEach(entry => {
+			const entryTime = new Date(entry.timestamp);
+			const minutesAgo = Math.floor((now.getTime() - entryTime.getTime()) / (1000 * 60));
+			const bucketIndex = Math.floor(minutesAgo / 5);
+			
+			if (bucketIndex >= 0 && bucketIndex < 24) {
+				buckets[23 - bucketIndex] += entry.total_tokens;
+			}
+		});
+		
+		// Store non-zero buckets to create a meaningful sparkline
+		this.fiveMinuteTokens = buckets;
+		this.tokenHistory = buckets.filter(tokens => tokens > 0);
+		
+		// If no recent activity, add some sample data to show the sparkline
+		if (this.tokenHistory.length === 0) {
+			this.tokenHistory = [0];
+		}
+	}
+
+	private initializeDailyCosts(): void {
+		const now = new Date();
+		const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+		
+		// Group entries by day
+		const dailyMap = new Map<string, number>();
+		
+		this.allEntries
+			.filter(entry => new Date(entry.timestamp) >= sevenDaysAgo)
+			.forEach(entry => {
+				const date = new Date(entry.timestamp).toISOString().split('T')[0];
+				const cost = calculateCost(entry);
+				dailyMap.set(date, (dailyMap.get(date) || 0) + cost);
+			});
+		
+		// Convert to array and sort by date
+		this.dailyCosts = Array.from(dailyMap.entries())
+			.map(([date, cost]) => ({ date, cost }))
+			.sort((a, b) => a.date.localeCompare(b.date));
+	}
+
+	private updateFiveMinuteTokens(newTokens: number): void {
+		// Shift array and add new value
+		this.fiveMinuteTokens.shift();
+		this.fiveMinuteTokens.push(newTokens);
+		
+		// Update token history for sparkline
+		this.tokenHistory = this.fiveMinuteTokens.filter(tokens => tokens > 0);
+		if (this.tokenHistory.length === 0) {
+			this.tokenHistory = [0];
+		}
+		
+		// Keep reasonable size
+		if (this.tokenHistory.length > 50) {
+			this.tokenHistory = this.tokenHistory.slice(-50);
+		}
+	}
+
+	private calculateProjections(stats: LiveStats): {
+		dailyAverage: number;
+		weeklyProjection: number;
+		monthlyProjection: number;
+	} {
+		// Calculate daily average from the last 7 days
+		const dailyAverage = this.dailyCosts.length > 0
+			? this.dailyCosts.reduce((sum, d) => sum + d.cost, 0) / this.dailyCosts.length
+			: stats.todayCost;
+		
+		// Project based on current burn rate if significantly different from average
+		const adjustedDaily = stats.burnRate > 20 
+			? dailyAverage * (1 + stats.burnRate / 100)
+			: stats.burnRate < -20
+			? dailyAverage * (1 + stats.burnRate / 100)
+			: dailyAverage;
+		
+		return {
+			dailyAverage,
+			weeklyProjection: adjustedDaily * 7,
+			monthlyProjection: adjustedDaily * 30,
+		};
 	}
 }

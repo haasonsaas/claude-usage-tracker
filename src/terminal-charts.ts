@@ -46,10 +46,13 @@ export class TerminalCharts {
 	static barChart(
 		data: Array<{ label: string; value: number; color?: typeof chalk }>,
 		maxWidth: number,
+		options: { showPercentageOfTotal?: boolean } = {},
 	): string[] {
 		if (data.length === 0) return [];
 
+		const { showPercentageOfTotal = true } = options;
 		const maxValue = Math.max(...data.map((d) => d.value));
+		const totalValue = data.reduce((sum, d) => sum + d.value, 0);
 		const maxLabelLength = Math.max(...data.map((d) => d.label.length));
 		const barWidth = maxWidth - maxLabelLength - 10; // Leave space for label and value
 
@@ -57,7 +60,9 @@ export class TerminalCharts {
 			const barLength = Math.floor((value / maxValue) * barWidth);
 			const bar = color("█".repeat(barLength));
 			const padding = " ".repeat(maxLabelLength - label.length);
-			const percentage = ((value / maxValue) * 100).toFixed(0);
+			const percentage = showPercentageOfTotal 
+				? ((value / totalValue) * 100).toFixed(0)
+				: ((value / maxValue) * 100).toFixed(0);
 
 			return `${label}${padding} ${bar} ${percentage}%`;
 		});
