@@ -9,7 +9,10 @@ import {
 	getRateLimitInfo,
 } from "./analyzer.js";
 import type { PlanType } from "./config.js";
+import { ConversationLengthAnalyzer } from "./conversation-length-analytics.js";
 import { loadUsageData } from "./data-loader.js";
+import { DeepAnalyzer } from "./deep-analysis.js";
+import { ExportManager, type ExportOptions } from "./export-manager.js";
 import {
 	formatDailyTable,
 	formatEfficiencyInsights,
@@ -17,14 +20,12 @@ import {
 	formatRateLimitStatus,
 	formatWeeklySummary,
 } from "./formatters.js";
-import { DeepAnalyzer } from "./deep-analysis.js";
 import { ModelAdvisor } from "./model-advisor.js";
 import { OptimizationAnalyzer } from "./optimization-analytics.js";
 import { PatternAnalyzer } from "./pattern-analysis.js";
 import { PredictiveAnalyzer } from "./predictive-analytics.js";
+import { QueryEngine } from "./query-engine.js";
 import { ResearchAnalyzer } from "./research-analytics.js";
-import { ConversationLengthAnalyzer } from "./conversation-length-analytics.js";
-import { ExportManager, type ExportOptions } from "./export-manager.js";
 import { UsageWatcher } from "./watch-monitor.js";
 
 function handleError(error: unknown, isJsonMode = false): void {
@@ -849,7 +850,11 @@ program
 		"Analyze conversation length patterns and optimization opportunities",
 	)
 	.option("--json", "Output as JSON")
-	.option("-d, --days <days>", "Number of days to analyze (default: all data)", "0")
+	.option(
+		"-d, --days <days>",
+		"Number of days to analyze (default: all data)",
+		"0",
+	)
 	.action(async (options) => {
 		try {
 			const rawEntries = await loadUsageData();
@@ -870,15 +875,23 @@ program
 			if (days > 0) {
 				const cutoffDate = new Date();
 				cutoffDate.setDate(cutoffDate.getDate() - days);
-				entries = rawEntries.filter(entry => new Date(entry.timestamp) >= cutoffDate);
-				
+				entries = rawEntries.filter(
+					(entry) => new Date(entry.timestamp) >= cutoffDate,
+				);
+
 				if (entries.length === 0) {
 					if (options.json) {
 						console.log(
-							JSON.stringify({ error: `No usage data found in the last ${days} days` }, null, 2),
+							JSON.stringify(
+								{ error: `No usage data found in the last ${days} days` },
+								null,
+								2,
+							),
 						);
 					} else {
-						console.log(chalk.yellow(`No usage data found in the last ${days} days.`));
+						console.log(
+							chalk.yellow(`No usage data found in the last ${days} days.`),
+						);
 					}
 					return;
 				}
@@ -896,9 +909,7 @@ program
 				// Overview
 				console.log(chalk.blue.bold("📊 Overview"));
 				if (days > 0) {
-					console.log(
-						`Analysis period: Last ${chalk.yellow(days)} days`,
-					);
+					console.log(`Analysis period: Last ${chalk.yellow(days)} days`);
 				}
 				console.log(
 					`Total conversations: ${chalk.green(analysis.totalConversations)}`,
@@ -983,7 +994,7 @@ program
 
 					console.log(chalk.blue.bold("\n💸 Cost by Length Category"));
 					const costByLength = analysis.costAnalysis.costByLength;
-					
+
 					if (costByLength.quick.totalCost > 0) {
 						console.log(
 							`Quick: $${costByLength.quick.totalCost.toFixed(4)} total, $${costByLength.quick.avgCost.toFixed(4)} avg, ${Math.round(costByLength.quick.costEfficiency)} tokens/$`,
@@ -1027,18 +1038,27 @@ program
 	.command("export")
 	.description("Export usage data in various formats")
 	.option("-f, --format <format>", "Export format: csv, json, summary", "csv")
-	.option("-o, --output <file>", "Output filename (auto-generated if not specified)")
+	.option(
+		"-o, --output <file>",
+		"Output filename (auto-generated if not specified)",
+	)
 	.option("-s, --start <date>", "Start date (YYYY-MM-DD)")
 	.option("-e, --end <date>", "End date (YYYY-MM-DD)")
 	.option("-p, --project <name>", "Filter by project name")
-	.option("-t, --template <type>", "Template: billing, efficiency, analytics, raw", "raw")
+	.option(
+		"-t, --template <type>",
+		"Template: billing, efficiency, analytics, raw",
+		"raw",
+	)
 	.option("--json", "Output export summary as JSON")
 	.action(async (options) => {
 		try {
 			const entries = await loadUsageData();
 			if (entries.length === 0) {
 				if (options.json) {
-					console.log(JSON.stringify({ error: "No usage data found" }, null, 2));
+					console.log(
+						JSON.stringify({ error: "No usage data found" }, null, 2),
+					);
 				} else {
 					console.log(chalk.yellow("No usage data found."));
 				}
@@ -1051,7 +1071,7 @@ program
 				startDate: options.start,
 				endDate: options.end,
 				project: options.project,
-				template: options.template
+				template: options.template,
 			};
 
 			const exportManager = new ExportManager(entries);
@@ -1061,14 +1081,28 @@ program
 				console.log(JSON.stringify(summary, null, 2));
 			} else {
 				console.log(formatHeader("📤 Export Complete"));
-				console.log(`${chalk.green("✓")} File: ${summary.exportedAt.split('T')[0]}`);
-				console.log(`${chalk.green("✓")} Exported: ${chalk.cyan(summary.totalEntries.toLocaleString())} entries`);
-				console.log(`${chalk.green("✓")} Date range: ${chalk.yellow(summary.dateRange.start)} to ${chalk.yellow(summary.dateRange.end)}`);
-				console.log(`${chalk.green("✓")} Total cost: ${chalk.green(`$${summary.totalCost.toFixed(4)}`)}`);
-				console.log(`${chalk.green("✓")} Total tokens: ${chalk.cyan(summary.totalTokens.toLocaleString())}`);
-				console.log(`${chalk.green("✓")} Projects: ${summary.projects.length} (${summary.projects.slice(0, 3).join(", ")}${summary.projects.length > 3 ? "..." : ""})`);
-				console.log(`${chalk.green("✓")} File size: ${chalk.gray(summary.fileSize)}`);
-				
+				console.log(
+					`${chalk.green("✓")} File: ${summary.exportedAt.split("T")[0]}`,
+				);
+				console.log(
+					`${chalk.green("✓")} Exported: ${chalk.cyan(summary.totalEntries.toLocaleString())} entries`,
+				);
+				console.log(
+					`${chalk.green("✓")} Date range: ${chalk.yellow(summary.dateRange.start)} to ${chalk.yellow(summary.dateRange.end)}`,
+				);
+				console.log(
+					`${chalk.green("✓")} Total cost: ${chalk.green(`$${summary.totalCost.toFixed(4)}`)}`,
+				);
+				console.log(
+					`${chalk.green("✓")} Total tokens: ${chalk.cyan(summary.totalTokens.toLocaleString())}`,
+				);
+				console.log(
+					`${chalk.green("✓")} Projects: ${summary.projects.length} (${summary.projects.slice(0, 3).join(", ")}${summary.projects.length > 3 ? "..." : ""})`,
+				);
+				console.log(
+					`${chalk.green("✓")} File size: ${chalk.gray(summary.fileSize)}`,
+				);
+
 				// Show some helpful next steps
 				console.log(chalk.blue.bold("\n💡 Next Steps:"));
 				if (options.format === "csv") {
@@ -1081,6 +1115,128 @@ program
 					console.log("• Review summary for insights and planning");
 					console.log("• Share with stakeholders for budget discussions");
 				}
+			}
+		} catch (error) {
+			handleError(error, options.json);
+		}
+	});
+
+program
+	.command("query")
+	.description("Query usage data using SQL-like syntax")
+	.argument("<query>", "SQL-like query string")
+	.option("-f, --format <format>", "output format (json, table, csv)", "json")
+	.option("--pretty", "pretty print JSON output", false)
+	.option("--no-metadata", "exclude execution metadata")
+	.option("--explain", "show query execution plan instead of results")
+	.action(async (queryString: string, options) => {
+		try {
+			const allEntries = await loadUsageData();
+
+			if (allEntries.length === 0) {
+				console.log(
+					"❌ No usage data found. Make sure Claude has been used and log files exist.",
+				);
+				process.exit(1);
+			}
+
+			const queryEngine = new QueryEngine(allEntries);
+
+			if (options.explain) {
+				const result = await queryEngine.execute(queryString, true);
+
+				if (options.format === "json") {
+					console.log(
+						JSON.stringify(result.explanation, null, options.pretty ? 2 : 0),
+					);
+				} else {
+					console.log(chalk.cyan.bold("🔍 Query Execution Plan"));
+					console.log(chalk.gray(`Query: ${queryString}`));
+					console.log(
+						chalk.gray(
+							`Dataset: ${allEntries.length.toLocaleString()} entries\n`,
+						),
+					);
+
+					// Display execution plan
+					console.log(chalk.blue.bold("📋 Execution Steps:"));
+					result.explanation!.plan.forEach((step, index) => {
+						const costIndicator =
+							step.estimatedCost > 5
+								? "🔴"
+								: step.estimatedCost > 2
+									? "🟡"
+									: "🟢";
+						console.log(
+							`${index + 1}. ${costIndicator} ${chalk.bold(step.step)}`,
+						);
+						console.log(`   ${step.description}`);
+						console.log(
+							`   ${chalk.gray(`Cost: ${step.estimatedCost} | Rows: ${step.rowsProcessed.toLocaleString()}`)}`,
+						);
+						console.log();
+					});
+
+					// Show optimization hints
+					if (result.explanation!.optimizationHints.length > 0) {
+						console.log(chalk.yellow.bold("💡 Optimization Hints:"));
+						result.explanation!.optimizationHints.forEach((hint) => {
+							console.log(`   • ${hint}`);
+						});
+						console.log();
+					}
+
+					console.log(
+						chalk.green(
+							`✅ Total steps: ${result.explanation!.totalExecutionSteps}`,
+						),
+					);
+				}
+				return;
+			}
+
+			const result = await queryEngine.execute(queryString);
+
+			if (options.format === "json") {
+				const output = options.metadata ? result : result.data;
+				console.log(JSON.stringify(output, null, options.pretty ? 2 : 0));
+			} else if (options.format === "table") {
+				// Pretty table output for humans
+				if (result.data.length === 0) {
+					console.log("📊 No results found");
+					return;
+				}
+
+				console.log(
+					`\n📊 Query Results (${result.data.length} rows, ${result.metadata.executionTime}ms)\n`,
+				);
+				console.table(result.data);
+			} else if (options.format === "csv") {
+				// CSV output
+				if (result.data.length === 0) {
+					console.log(""); // Empty CSV
+					return;
+				}
+
+				const headers = Object.keys(result.data[0]);
+				console.log(headers.join(","));
+
+				for (const row of result.data) {
+					const values = headers.map((header) => {
+						const value = row[header];
+						return typeof value === "string" && value.includes(",")
+							? `"${value}"`
+							: String(value);
+					});
+					console.log(values.join(","));
+				}
+			}
+
+			// Show metadata if requested and not in JSON mode
+			if (options.metadata && options.format !== "json") {
+				console.log(
+					`\n⚡ Execution: ${result.metadata.executionTime}ms | Rows: ${result.metadata.totalRows}`,
+				);
 			}
 		} catch (error) {
 			handleError(error, options.json);
