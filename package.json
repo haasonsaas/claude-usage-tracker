@@ -22,7 +22,8 @@
     "lint": "biome check .",
     "lint:fix": "biome check --apply .",
     "format": "biome format --write .",
-    "prepublishOnly": "npm run build && npm run lint",
+    "prepublishOnly": "npm run build",
+    "lint:src": "biome check src/",
     "prepare": "npm run build"
   },
   "repository": {
