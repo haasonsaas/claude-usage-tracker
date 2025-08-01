@@ -80,9 +80,9 @@ describe("ConversationLengthAnalyzer", () => {
 			const complexProject = analysis.projectProfiles.find(
 				(p) => p.project === "complex-project",
 			);
-			expect(complexProject!.recommendations).toContain(
-				expect.stringMatching(/break.*down.*complex.*tasks/i),
-			);
+			expect(complexProject!.recommendations.some(rec => 
+			rec.includes('Break down complex tasks')
+			)).toBe(true);
 		});
 	});
 
@@ -100,9 +100,9 @@ describe("ConversationLengthAnalyzer", () => {
 			const analysis = analyzer.analyzeConversationLengths();
 
 			// First conversation should be marked as having quick follow-up
-			expect(analysis.recommendations).toContain(
-				expect.stringMatching(/quick follow-ups.*thorough/i),
-			);
+			expect(analysis.recommendations.some(rec => 
+			rec.includes('quick follow-ups') && rec.includes('thorough')
+			)).toBe(true);
 		});
 
 		it("should detect conversation completion patterns", () => {
@@ -115,9 +115,9 @@ describe("ConversationLengthAnalyzer", () => {
 			const analysis = analyzer.analyzeConversationLengths();
 
 			// Should recommend breaking down complex problems
-			expect(analysis.recommendations).toContain(
-				expect.stringMatching(/breaking.*down.*complex/i),
-			);
+			expect(analysis.recommendations.some(rec => 
+			rec.includes('breaking down complex')
+			)).toBe(true);
 		});
 	});
 
@@ -139,9 +139,9 @@ describe("ConversationLengthAnalyzer", () => {
 			analyzer.loadConversations(entries);
 			const analysis = analyzer.analyzeConversationLengths();
 
-			expect(analysis.recommendations).toContain(
-				expect.stringMatching(/focus.*conversations.*specific.*questions/i),
-			);
+			expect(analysis.recommendations.some(rec => 
+			rec.includes('Focus conversations') && rec.includes('specific questions')
+			)).toBe(true);
 		});
 	});
 
@@ -336,9 +336,9 @@ describe("ConversationLengthAnalyzer", () => {
 			analyzer.loadConversations(entries);
 			const analysis = analyzer.analyzeConversationLengths();
 
-			expect(analysis.recommendations).toContain(
-				expect.stringMatching(/break.*down.*complex.*problems/i),
-			);
+			expect(analysis.recommendations.some(rec => 
+			rec.includes('breaking down complex problems')
+			)).toBe(true);
 		});
 
 		it("should identify successful patterns to replicate", () => {
@@ -352,11 +352,11 @@ describe("ConversationLengthAnalyzer", () => {
 			const analysis = analyzer.analyzeConversationLengths();
 
 			const webProject = analysis.projectProfiles.find(
-				(p) => p.project === "web-dev",
+			(p) => p.project === "web-dev",
 			);
-			expect(webProject!.recommendations).toContain(
-				expect.stringMatching(/medium.*conversations.*work.*well/i),
-			);
+			expect(webProject!.recommendations.some(rec => 
+			rec.includes('conversations work well')
+		)).toBe(true);
 		});
 	});
 });

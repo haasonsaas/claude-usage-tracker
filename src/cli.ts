@@ -848,10 +848,11 @@ program
 		"Analyze conversation length patterns and optimization opportunities",
 	)
 	.option("--json", "Output as JSON")
+	.option("-d, --days <days>", "Number of days to analyze (default: all data)", "0")
 	.action(async (options) => {
 		try {
-			const entries = await loadUsageData();
-			if (entries.length === 0) {
+			const rawEntries = await loadUsageData();
+			if (rawEntries.length === 0) {
 				if (options.json) {
 					console.log(
 						JSON.stringify({ error: "No usage data found" }, null, 2),
@@ -860,6 +861,26 @@ program
 					console.log(chalk.yellow("No usage data found."));
 				}
 				return;
+			}
+
+			// Filter entries by date if days option is provided
+			let entries = rawEntries;
+			const days = parseInt(options.days);
+			if (days > 0) {
+				const cutoffDate = new Date();
+				cutoffDate.setDate(cutoffDate.getDate() - days);
+				entries = rawEntries.filter(entry => new Date(entry.timestamp) >= cutoffDate);
+				
+				if (entries.length === 0) {
+					if (options.json) {
+						console.log(
+							JSON.stringify({ error: `No usage data found in the last ${days} days` }, null, 2),
+						);
+					} else {
+						console.log(chalk.yellow(`No usage data found in the last ${days} days.`));
+					}
+					return;
+				}
 			}
 
 			const analyzer = new ConversationLengthAnalyzer();
@@ -873,6 +894,11 @@ program
 
 				// Overview
 				console.log(chalk.blue.bold("📊 Overview"));
+				if (days > 0) {
+					console.log(
+						`Analysis period: Last ${chalk.yellow(days)} days`,
+					);
+				}
 				console.log(
 					`Total conversations: ${chalk.green(analysis.totalConversations)}`,
 				);

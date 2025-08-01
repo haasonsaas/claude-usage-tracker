@@ -393,11 +393,17 @@ export class ConversationLengthAnalyzer {
 		}
 
 		// Check success rates
+		const categoryOrder = { quick: 1, medium: 2, deep: 3, marathon: 4 };
 		const bestCategory = Object.entries(efficiencyByLength)
 			.filter(([_, data]: [string, any]) => data.count > 0)
-			.sort(
-				([_, a], [__, b]) => (b as any).successRate - (a as any).successRate,
-			)[0];
+			.sort(([categoryA, a], [categoryB, b]) => {
+				const successDiff = (b as any).successRate - (a as any).successRate;
+				if (Math.abs(successDiff) < 0.01) {
+					// If success rates are very close, prefer longer conversations (higher order)
+					return (categoryOrder as any)[categoryB] - (categoryOrder as any)[categoryA];
+				}
+				return successDiff;
+			})[0];
 
 		if (bestCategory) {
 			const [category, data] = bestCategory as [string, any];

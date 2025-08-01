@@ -116,7 +116,7 @@ Analyze your conversation patterns and get insights on optimal conversation leng
 | `insights` | Show detailed efficiency insights and optimization recommendations | `-d, --days <days>` - Number of days to analyze (default: 30) |
 | `recommend` | Get AI-powered model recommendation for your task | `[prompt]` - Task description (optional, will prompt interactively) |
 | `watch` | Live monitoring with real-time cost tracking and burn rate analysis | None - Press Ctrl+C to stop |
-| `length` | Analyze conversation length patterns and get optimization recommendations | None |
+| `length` | Analyze conversation length patterns and get optimization recommendations | `-d, --days <days>` - Number of days to analyze (default: all data) |
 
 ## Rate Limits (Effective August 28, 2025)
 
