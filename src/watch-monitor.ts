@@ -62,8 +62,9 @@ export class UsageWatcher {
 					const watcher = watch(
 						dataPath,
 						{ recursive: true },
-						async (_eventType, filename) => {
+						async (eventType, filename) => {
 							if (filename?.endsWith(".jsonl")) {
+								console.log(chalk.dim(`🔍 File change detected: ${eventType} on ${filename}`));
 								await this.handleFileChange();
 							}
 						},
@@ -107,7 +108,7 @@ export class UsageWatcher {
 			const newEntries = await this.dataLoader.loadNewEntries();
 			
 			if (newEntries.length > 0) {
-				console.log(chalk.dim(`Processing ${newEntries.length} new entries...`));
+				console.log(chalk.yellow(`\n📥 Processing ${newEntries.length} new entries...`));
 				
 				// Add new entries to our cache
 				this.allEntries.push(...newEntries);
@@ -142,6 +143,11 @@ export class UsageWatcher {
 						this.conversationHistory = this.conversationHistory.slice(-50);
 					}
 				}
+
+				// Debug: show what was added
+				const totalNewCost = newEntries.reduce((sum, e) => sum + calculateCost(e), 0);
+				console.log(chalk.green(`✅ Added ${newEntries.length} entries, cost: $${totalNewCost.toFixed(4)}`));
+				console.log(chalk.blue(`📊 Total entries in memory: ${this.allEntries.length}`));
 
 				this.lastProcessedTime = new Date();
 				await this.updateStats();
