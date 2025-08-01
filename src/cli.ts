@@ -1243,6 +1243,33 @@ program
 		}
 	});
 
+program
+	.command("watch")
+	.description("Live monitor Claude usage with real-time updates")
+	.action(async () => {
+		try {
+			const watcher = new UsageWatcher();
+			
+			// Handle Ctrl+C gracefully
+			process.on("SIGINT", () => {
+				watcher.stopWatching();
+				process.exit(0);
+			});
+			
+			await watcher.startWatching((stats, recentConversations) => {
+				// Clear and redraw the display
+				process.stdout.write(
+					watcher.formatLiveDisplay(stats, recentConversations)
+				);
+			});
+			
+			// Keep the process alive
+			await new Promise(() => {});
+		} catch (error) {
+			handleError(error);
+		}
+	});
+
 // Default command
 if (process.argv.length === 2) {
 	program.parse(["node", "cli.js", "status"]);

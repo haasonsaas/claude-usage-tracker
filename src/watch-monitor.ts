@@ -16,6 +16,7 @@ export interface LiveStats {
 	burnRate: number; // % change from average
 	totalConversationsToday: number;
 	averageCostPerConversation: number;
+	lastUpdated: Date;
 }
 
 export interface ConversationEvent {
@@ -86,13 +87,13 @@ export class UsageWatcher {
 			callback(this.lastStats, this.conversationHistory.slice(-5));
 		}
 
-		// Regular updates every 10 seconds
+		// Regular updates every 5 seconds for more responsive display
 		this.updateInterval = setInterval(async () => {
 			await this.updateStats();
 			if (this.lastStats) {
 				callback(this.lastStats, this.conversationHistory.slice(-5));
 			}
-		}, 10000);
+		}, 5000);
 
 		console.log(chalk.green("✅ Live monitoring started"));
 	}
@@ -100,7 +101,7 @@ export class UsageWatcher {
 	private async handleFileChange(): Promise<void> {
 		try {
 			// Debounce rapid file changes
-			await new Promise((resolve) => setTimeout(resolve, 500));
+			await new Promise((resolve) => setTimeout(resolve, 200));
 
 			// Get only new entries using incremental loader
 			const newEntries = await this.dataLoader.loadNewEntries();
@@ -233,6 +234,7 @@ export class UsageWatcher {
 				totalConversationsToday: todayConversations,
 				averageCostPerConversation:
 					todayConversations > 0 ? todayCost / todayConversations : 0,
+				lastUpdated: new Date(),
 			};
 		} catch (_error) {
 			console.error(chalk.red("Error updating stats:"), _error);
@@ -278,7 +280,11 @@ export class UsageWatcher {
 		output +=
 			chalk.blue.bold("🔴 LIVE USAGE MONITOR") +
 			chalk.gray(` (${now.toLocaleTimeString()})\n`);
-		output += `${chalk.gray("─".repeat(70))}\n\n`;
+		output += `${chalk.gray("─".repeat(70))}\n`;
+		
+		// Last update time
+		const updateAge = Math.floor((now.getTime() - stats.lastUpdated.getTime()) / 1000);
+		output += chalk.dim(`Last updated: ${updateAge}s ago\n\n`);
 
 		// Today's stats
 		output += chalk.cyan.bold("📊 Today's Usage\n");
