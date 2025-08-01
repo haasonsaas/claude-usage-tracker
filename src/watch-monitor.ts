@@ -320,57 +320,53 @@ export class UsageWatcher {
 		// Clear screen and move to top
 		output += "\x1b[2J\x1b[H";
 
-		// Header with timestamp
-		output +=
-			chalk.blue.bold("🔴 LIVE USAGE MONITOR") +
-			chalk.gray(` (${now.toLocaleTimeString()})\n`);
-		output += `${chalk.gray("─".repeat(70))}\n`;
+		// Compact header
+		output += chalk.blue.bold("CLAUDE USAGE MONITOR ") + chalk.gray(`${now.toLocaleTimeString()}\n`);
+		output += chalk.gray("━".repeat(60)) + "\n\n";
+
+		// Main stats in a compact grid
+		const projections = this.calculateProjections(stats);
 		
-		// Last update time
-		const updateAge = Math.floor((now.getTime() - stats.lastUpdated.getTime()) / 1000);
-		output += chalk.dim(`Last updated: ${updateAge}s ago\n\n`);
-
-		// Today's stats
-		output += chalk.cyan.bold("📊 Today's Usage\n");
-		output += `Tokens: ${chalk.white(this.formatTokens(stats.todayTotal))} | `;
-		output += `Cost: ${chalk.green(`$${stats.todayCost.toFixed(2)}`)} | `;
-		output += `Conversations: ${chalk.white(stats.totalConversationsToday)}\n`;
-
-		// Burn rate indicator
-		const burnRateColor =
-			stats.burnRate > 20
-				? chalk.red
-				: stats.burnRate > 0
-					? chalk.yellow
-					: chalk.green;
-		const burnRateIcon =
-			stats.burnRate > 20 ? "🔥" : stats.burnRate > 0 ? "📈" : "📉";
-		output += `Burn Rate: ${burnRateColor(`${stats.burnRate > 0 ? "+" : ""}${stats.burnRate.toFixed(1)}%`)} ${burnRateIcon}\n\n`;
-
-		// Week stats
-		output += chalk.cyan.bold("📅 This Week\n");
-		output += `Tokens: ${chalk.white(this.formatTokens(stats.weekTotal))} | `;
-		output += `Cost: ${chalk.green(`$${stats.weekCost.toFixed(2)}`)}\n\n`;
-
-		// Last conversation
-		if (stats.lastConversationModel !== "N/A") {
-			const modelName = stats.lastConversationModel.includes("opus")
-				? "Opus 4"
-				: "Sonnet 4";
-			const modelColor = stats.lastConversationModel.includes("opus")
-				? chalk.magenta
-				: chalk.blue;
-
-			output += chalk.cyan.bold("💬 Last Conversation\n");
-			output += `Model: ${modelColor(modelName)} | `;
-			output += `Cost: ${chalk.green(`$${stats.lastConversationCost.toFixed(4)}`)}\n\n`;
+		// Row 1: Today & Week
+		output += chalk.cyan("Today: ") + chalk.white(`$${stats.todayCost.toFixed(2)}`);
+		output += chalk.gray(" | ");
+		output += chalk.cyan("Week: ") + chalk.white(`$${stats.weekCost.toFixed(2)}`);
+		output += chalk.gray(" | ");
+		output += chalk.cyan("Month proj: ") + chalk.yellow(`$${projections.monthlyProjection.toFixed(0)}`);
+		
+		// Add warning icon if spending is high
+		if (projections.monthlyProjection > 1000) {
+			output += chalk.red(" ⚠️");
 		}
+		output += "\n";
 
-		// Token usage sparkline (last 2 hours)
-		output += chalk.cyan.bold("📈 Token Usage Trend (2hr)\n");
+		// Row 2: Model split & burn rate
+		const modelUsage = this.getModelUsageDistribution();
+		if (modelUsage.length > 0) {
+			const sonnetPct = modelUsage.find(m => m.label === "Sonnet 4")?.value || 0;
+			const opusPct = modelUsage.find(m => m.label === "Opus 4")?.value || 0;
+			const totalTokens = sonnetPct + opusPct;
+			
+			if (totalTokens > 0) {
+				const sonnetPercent = Math.round((sonnetPct / totalTokens) * 100);
+				const opusPercent = Math.round((opusPct / totalTokens) * 100);
+				
+				output += chalk.blue("S4: ") + chalk.white(`${sonnetPercent}%`);
+				output += chalk.gray(" | ");
+				output += chalk.magenta("O4: ") + chalk.white(`${opusPercent}%`);
+			}
+		}
+		
+		output += chalk.gray(" | ");
+		const burnRateColor = stats.burnRate > 20 ? chalk.red : stats.burnRate > 0 ? chalk.yellow : chalk.green;
+		output += chalk.cyan("Burn: ") + burnRateColor(`${stats.burnRate > 0 ? "+" : ""}${stats.burnRate.toFixed(0)}%`);
+		output += "\n\n";
+
+		// Token usage sparkline - more compact
+		output += chalk.cyan("Activity: ");
 		const sparkline = TerminalCharts.sparkline(
 			this.tokenHistory.length > 0 ? this.tokenHistory : [0], 
-			50, 
+			40, 
 			{
 				color: (value, max) => {
 					if (value > max * 0.8) return chalk.red;
@@ -379,116 +375,54 @@ export class UsageWatcher {
 				},
 			}
 		);
-		output += `${sparkline}\n`;
-		output += chalk.gray(`Each point = 5 min | Min: ${Math.min(...this.tokenHistory).toLocaleString()} | Max: ${Math.max(...this.tokenHistory).toLocaleString()} tokens\n\n`);
-
-		// Model usage distribution
-		const modelUsage = this.getModelUsageDistribution();
-		if (modelUsage.length > 0) {
-			output += chalk.cyan.bold("🎯 Model Usage Distribution\n");
-			const barChart = TerminalCharts.barChart(modelUsage, 50, { showPercentageOfTotal: true });
-			barChart.forEach((line) => (output += line + "\n"));
-			output += "\n";
-		}
-
-		// Weekly cost trend
-		if (this.dailyCosts.length > 0) {
-			output += chalk.cyan.bold("📊 Weekly Cost Trend\n");
-			const dailyValues = this.dailyCosts.map(d => d.cost);
-			const weekChart = TerminalCharts.lineChart(dailyValues, 50, 5, {
-				showAxes: true,
-				color: chalk.yellow,
-			});
-			weekChart.forEach((line) => (output += line + "\n"));
-			
-			// Add day labels
-			const dayLabels = this.dailyCosts.map(d => {
-				const date = new Date(d.date);
-				return date.toLocaleDateString('en-US', { weekday: 'short' });
-			});
-			output += chalk.gray("     " + dayLabels.map(l => l.padEnd(7)).join("") + "\n\n");
-		}
-
-		// Hourly heat map
-		output += chalk.cyan.bold("🕐 24-Hour Usage Pattern\n");
-		const heatMap = TerminalCharts.heatMap(this.hourlyUsage, {
-			width: 24,
-			showLabels: true,
+		output += sparkline + "\n";
+		
+		// Hourly heat map - single line
+		output += chalk.cyan("24h pattern: ");
+		const hourlySparkline = TerminalCharts.sparkline(this.hourlyUsage, 24, {
+			color: (value, max) => {
+				if (value === 0) return chalk.gray;
+				if (value > max * 0.7) return chalk.red;
+				if (value > max * 0.4) return chalk.yellow;
+				return chalk.green;
+			},
 		});
-		heatMap.forEach((line) => (output += line + "\n"));
+		output += hourlySparkline + "\n\n";
+
+		// Recent activity - compact view
+		if (recentConversations.length > 0) {
+			output += chalk.cyan("Recent: ");
+			const recent = recentConversations.slice(-3).reverse();
+			recent.forEach((conv, i) => {
+				if (i > 0) output += " → ";
+				const model = conv.model.includes("opus") ? "O4" : "S4";
+				const modelColor = conv.model.includes("opus") ? chalk.magenta : chalk.blue;
+				output += modelColor(model) + chalk.gray(`/$${conv.cost.toFixed(2)}`);
+			});
+			output += "\n\n";
+		}
+
+		// Only show critical warnings
+		if (projections.monthlyProjection > 1000) {
+			output += chalk.red.bold("⚠️  BUDGET ALERT: ") + 
+				chalk.red(`Monthly projection: $${projections.monthlyProjection.toFixed(0)}\n`);
+		}
+		
+		if (stats.weekCost > 200) {
+			output += chalk.yellow.bold("⚠️  HIGH USAGE: ") + 
+				chalk.yellow(`This week already at $${stats.weekCost.toFixed(0)}\n`);
+		}
+		
+		if (stats.burnRate > 50) {
+			output += chalk.red.bold("🔥 BURN RATE: ") + 
+				chalk.red(`${stats.burnRate.toFixed(0)}% above average\n`);
+		}
+		
+		// Spacer before controls
 		output += "\n";
 
-		// Recent conversations
-		if (recentConversations.length > 0) {
-			output += chalk.cyan.bold("📝 Recent Activity\n");
-
-			const recent = recentConversations.slice(-3).reverse();
-			for (const conv of recent) {
-				const timeAgo = this.getTimeAgo(conv.timestamp);
-				const modelName = conv.model.includes("opus") ? "Opus" : "Sonnet";
-				const modelColor = conv.model.includes("opus")
-					? chalk.magenta
-					: chalk.blue;
-				const efficiencyIcon =
-					conv.efficiency === "high"
-						? "⭐⭐⭐"
-						: conv.efficiency === "medium"
-							? "⭐⭐"
-							: "⭐";
-
-				output += chalk.gray(`${timeAgo} | `);
-				output += `${modelColor(modelName)} | `;
-				output += `${chalk.green(`$${conv.cost.toFixed(4)}`)} | `;
-				output += `${efficiencyIcon}\n`;
-			}
-			output += "\n";
-		}
-
-		// Budget projections and warnings
-		output += chalk.cyan.bold("💰 Budget Analysis\n");
-		const projections = this.calculateProjections(stats);
-		
-		// Current pace
-		output += `Daily average: ${chalk.yellow(`$${projections.dailyAverage.toFixed(2)}`)}\n`;
-		output += `Weekly projection: ${chalk.yellow(`$${projections.weeklyProjection.toFixed(2)}`)}\n`;
-		output += `Monthly projection: ${chalk.yellow(`$${projections.monthlyProjection.toFixed(2)}`)}\n\n`;
-		
-		// Budget warnings
-		if (projections.monthlyProjection > 1000) {
-			output += chalk.red.bold("🚨 BUDGET ALERT: Monthly projection exceeds $1,000!\n");
-			output += chalk.red(`At current pace, you'll spend $${projections.monthlyProjection.toFixed(0)} this month\n\n`);
-		} else if (projections.weeklyProjection > 500) {
-			output += chalk.yellow.bold("⚠️  SPENDING WARNING: High weekly spend detected\n");
-			output += chalk.yellow(`Consider using Sonnet 4 more often to reduce costs\n\n`);
-		}
-		
-		// Rate limit warning based on weekly usage
-		if (stats.weekCost > 150) {
-			const percentOfTypicalBudget = (stats.weekCost / 200) * 100;
-			output += chalk.red.bold(`📊 USAGE ALERT: ${percentOfTypicalBudget.toFixed(0)}% of typical weekly budget used\n`);
-			
-			if (percentOfTypicalBudget > 100) {
-				output += chalk.red(`You've exceeded a typical weekly budget by ${(percentOfTypicalBudget - 100).toFixed(0)}%\n\n`);
-			}
-		}
-		
-		// Tips and alerts
-		if (stats.burnRate > 50) {
-			output += chalk.red.bold("🔥 HIGH BURN RATE ALERT\n");
-			output += chalk.red(
-				"Your usage is 50% higher than your average - slow down!\n\n",
-			);
-		} else if (stats.averageCostPerConversation > 20) {
-			output += chalk.yellow.bold("💡 OPTIMIZATION TIP\n");
-			output += chalk.yellow(
-				`Average cost per conversation: $${stats.averageCostPerConversation.toFixed(2)}\n`,
-			);
-			output += chalk.yellow(
-				"Consider using Sonnet 4 for simpler tasks to reduce costs\n\n",
-			);
-		}
-
 		// Controls
+		output += chalk.gray("──────────────────────────────────────────────────────────\n");
 		output += chalk.gray("Press Ctrl+C to stop monitoring\n");
 
 		return output;
